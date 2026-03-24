@@ -49,7 +49,7 @@ const devTools = [
   },
   {
     name: "Bolt.new",
-    description: "Build full-stack apps in seconds using AI in the browser.",
+    description: "Build full-stack apps in seconds using AI in your browser.",
     category: "App Builder",
     link: "https://bolt.new",
     rating: 4.5,
@@ -73,16 +73,25 @@ const devTools = [
   },
 ];
 
+const categories = ["All", "Code Generator", "UI Generation", "App Builder", "Coding Assistant", "IDE Extension", "Terminal Tool"];
+
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
 
   const allTools = [...codeGenerators, ...devTools];
 
-  const filteredTools = allTools.filter(tool =>
-    tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tool.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tool.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTools = allTools.filter(tool => {
+    const matchesSearch = 
+      tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tool.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tool.category.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesCategory = 
+      activeCategory === "All" || tool.category === activeCategory;
+
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-black to-zinc-950 text-white">
@@ -95,14 +104,19 @@ export default function Home() {
             </div>
             <h1 className="text-3xl font-bold">CodeOmniverse</h1>
           </div>
-          <div className="text-sm text-zinc-400">AI Tools for Developers</div>
+          <div className="text-sm text-zinc-400">Discover • Compare • Build Faster</div>
         </div>
       </header>
 
       <div className="max-w-6xl mx-auto px-6 py-16">
+        {/* Hero */}
         <div className="text-center mb-16">
-          <h2 className="text-6xl font-bold mb-4">CodeOmniverse</h2>
-          <p className="text-2xl text-zinc-400">Your hub for the best AI coding tools</p>
+          <h2 className="text-6xl font-bold mb-4 tracking-tight">
+            The Ultimate AI Tools Directory
+          </h2>
+          <p className="text-2xl text-zinc-400 max-w-2xl mx-auto">
+            Handpicked AI tools to help developers code faster and smarter
+          </p>
         </div>
 
         {/* Search */}
@@ -111,12 +125,29 @@ export default function Home() {
             <Search className="absolute left-5 top-4 text-zinc-500" size={22} />
             <input
               type="text"
-              placeholder="Search AI tools..."
+              placeholder="Search tools..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-zinc-900/80 border border-zinc-700 rounded-2xl pl-14 py-4 text-lg focus:outline-none focus:border-blue-500 placeholder-zinc-500"
             />
           </div>
+        </div>
+
+        {/* Category Filters */}
+        <div className="flex flex-wrap gap-3 mb-12 justify-center">
+          {categories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                activeCategory === cat
+                  ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
+                  : "bg-zinc-900 border border-zinc-700 hover:bg-zinc-800"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
 
         {/* AI Code Generators Section */}
@@ -125,23 +156,37 @@ export default function Home() {
             🔥 AI Code Generators
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {codeGenerators.map((tool, i) => (
-              <div key={i} className="group bg-zinc-900/70 border border-zinc-800 rounded-3xl p-8 hover:border-blue-500 hover:bg-zinc-900 transition-all hover:-translate-y-1">
-                {/* Card content same as before */}
+            {codeGenerators.filter(tool => 
+              activeCategory === "All" || tool.category === activeCategory
+            ).map((tool, i) => (
+              <div key={i} className="group bg-zinc-900/70 border border-zinc-800 rounded-3xl p-8 hover:border-blue-500 hover:bg-zinc-900 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10">
                 <div className="flex items-center gap-4 mb-6">
                   <div className={`w-14 h-14 ${tool.color} rounded-2xl flex items-center justify-center text-white text-3xl font-bold`}>
                     {tool.name[0]}
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-2xl">{tool.name}</h3>
-                    <span className="inline-block px-3 py-1 text-xs bg-zinc-800 rounded-full mt-1">{tool.category}</span>
+                    <span className="inline-block px-3 py-1 text-xs bg-zinc-800 rounded-full mt-1">
+                      {tool.category}
+                    </span>
                   </div>
-                  <div className="text-amber-400">★ {tool.rating}</div>
+                  <div className="flex items-center text-amber-400">
+                    ★ {tool.rating}
+                  </div>
                 </div>
-                <p className="text-zinc-400 mb-8 line-clamp-3">{tool.description}</p>
-                <a href={tool.link} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-white text-black font-semibold py-3.5 rounded-2xl hover:bg-zinc-200 transition-all">
-                  Visit Tool <ExternalLink size={18} />
+
+                <p className="text-zinc-400 mb-8 line-clamp-3 text-[15px]">
+                  {tool.description}
+                </p>
+
+                <a
+                  href={tool.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full bg-white text-black font-semibold py-3.5 rounded-2xl hover:bg-zinc-200 transition-all group-hover:scale-105"
+                >
+                  Visit Tool
+                  <ExternalLink size={18} />
                 </a>
               </div>
             ))}
@@ -154,22 +199,37 @@ export default function Home() {
             🛠️ AI Developer Tools
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {devTools.map((tool, i) => (
-              <div key={i} className="group bg-zinc-900/70 border border-zinc-800 rounded-3xl p-8 hover:border-blue-500 hover:bg-zinc-900 transition-all hover:-translate-y-1">
+            {devTools.filter(tool => 
+              activeCategory === "All" || tool.category === activeCategory
+            ).map((tool, i) => (
+              <div key={i} className="group bg-zinc-900/70 border border-zinc-800 rounded-3xl p-8 hover:border-blue-500 hover:bg-zinc-900 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10">
                 <div className="flex items-center gap-4 mb-6">
                   <div className={`w-14 h-14 ${tool.color} rounded-2xl flex items-center justify-center text-white text-3xl font-bold`}>
                     {tool.name[0]}
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-2xl">{tool.name}</h3>
-                    <span className="inline-block px-3 py-1 text-xs bg-zinc-800 rounded-full mt-1">{tool.category}</span>
+                    <span className="inline-block px-3 py-1 text-xs bg-zinc-800 rounded-full mt-1">
+                      {tool.category}
+                    </span>
                   </div>
-                  <div className="text-amber-400">★ {tool.rating}</div>
+                  <div className="flex items-center text-amber-400">
+                    ★ {tool.rating}
+                  </div>
                 </div>
-                <p className="text-zinc-400 mb-8 line-clamp-3">{tool.description}</p>
-                <a href={tool.link} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full bg-white text-black font-semibold py-3.5 rounded-2xl hover:bg-zinc-200 transition-all">
-                  Visit Tool <ExternalLink size={18} />
+
+                <p className="text-zinc-400 mb-8 line-clamp-3 text-[15px]">
+                  {tool.description}
+                </p>
+
+                <a
+                  href={tool.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full bg-white text-black font-semibold py-3.5 rounded-2xl hover:bg-zinc-200 transition-all group-hover:scale-105"
+                >
+                  Visit Tool
+                  <ExternalLink size={18} />
                 </a>
               </div>
             ))}
