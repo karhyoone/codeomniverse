@@ -59,6 +59,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-950 to-black text-white">
       <div className="max-w-6xl mx-auto px-6 py-16">
+        {/* Hero */}
         <div className="text-center mb-16">
           <h1 className="text-6xl font-bold mb-4">CodeOmniverse</h1>
           <p className="text-2xl text-zinc-400 max-w-2xl mx-auto">
@@ -66,7 +67,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Search Bar */}
+        {/* Search */}
         <div className="max-w-2xl mx-auto mb-12">
           <div className="relative">
             <Search className="absolute left-5 top-4 text-zinc-500" size={22} />
@@ -75,7 +76,7 @@ export default function Home() {
               placeholder="Search AI tools for developers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl pl-14 py-4 text-lg focus:outline-none focus:border-blue-500 placeholder-zinc-500"
+              className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl pl-12 py-4 text-lg focus:outline-none focus:border-blue-500 placeholder-zinc-500"
             />
           </div>
         </div>
@@ -89,7 +90,7 @@ export default function Home() {
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-zinc-800 rounded-xl flex items-center justify-center text-2xl">
+                  <div className="w-12 h-12 bg-zinc-800 rounded-xl flex items-center justify-center text-2xl font-bold">
                     {tool.name[0]}
                   </div>
                   <div>
