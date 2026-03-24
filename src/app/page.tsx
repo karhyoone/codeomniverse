@@ -8,7 +8,7 @@ const tools = [
     name: "Cursor",
     description: "The AI-first code editor that feels like pair programming with a genius.",
     category: "Code Editor",
-    link: "https://cursor.com",
+    link: "https://cursor.com/?ref=codeomniverse",
     rating: 4.9,
   },
   {
@@ -111,7 +111,7 @@ export default function Home() {
                 href={tool.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium"
+                className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium group-hover:text-blue-400 transition"
               >
                 Visit Tool 
                 <ExternalLink size={18} />
