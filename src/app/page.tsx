@@ -4,116 +4,31 @@ import { useState } from "react";
 import { Search, ExternalLink, Star, Plus } from "lucide-react";
 
 const codeGenerators = [
-  {
-    name: "Grok 4",
-    description: "xAI's most advanced model - truthful, helpful, and excellent at coding.",
-    category: "Code Generator",
-    link: "https://grok.x.ai",
-    rating: 4.8,
-    color: "bg-black",
-    affiliate: false,
-  },
-  {
-    name: "Cursor",
-    description: "The AI-first code editor that writes and refactors code with you.",
-    category: "Code Generator",
-    link: "https://cursor.com/?ref=codeomniverse",   // ← Strong affiliate link
-    rating: 4.9,
-    color: "bg-blue-500",
-    affiliate: true,
-  },
-  {
-    name: "GitHub Copilot",
-    description: "Industry-leading AI pair programmer inside VS Code.",
-    category: "Code Generator",
-    link: "https://github.com/features/copilot",
-    rating: 4.7,
-    color: "bg-purple-500",
-    affiliate: false,
-  },
-  {
-    name: "Claude 4",
-    description: "Best for complex reasoning and large codebases.",
-    category: "Code Generator",
-    link: "https://claude.ai",
-    rating: 4.8,
-    color: "bg-orange-500",
-    affiliate: false,
-  },
-  {
-    name: "Windsurf Editor",
-    description: "Next-gen AI code editor by Codeium.",
-    category: "Code Generator",
-    link: "https://windsurf.com",
-    rating: 4.4,
-    color: "bg-violet-500",
-    affiliate: false,
-  },
+  { name: "Grok 4", description: "xAI's most advanced model - truthful, helpful, and great at coding.", category: "Code Generator", link: "https://grok.x.ai", rating: 4.8, color: "bg-black" },
+  { name: "Cursor", description: "The AI-first code editor that writes and refactors code with you.", category: "Code Generator", link: "https://cursor.com/?ref=codeomniverse", rating: 4.9, color: "bg-blue-500" },
+  { name: "GitHub Copilot", description: "Industry-leading AI pair programmer inside VS Code.", category: "Code Generator", link: "https://github.com/features/copilot", rating: 4.7, color: "bg-purple-500" },
+  { name: "Claude 4", description: "Excellent at complex reasoning and large codebases.", category: "Code Generator", link: "https://claude.ai", rating: 4.8, color: "bg-orange-500" },
 ];
 
 const devTools = [
-  {
-    name: "v0 by Vercel",
-    description: "Generate production-ready UI components from text prompts.",
-    category: "UI Generation",
-    link: "https://v0.dev",
-    rating: 4.6,
-    color: "bg-pink-500",
-    affiliate: false,
-  },
-  {
-    name: "Bolt.new",
-    description: "Build full-stack apps instantly with AI in the browser.",
-    category: "App Builder",
-    link: "https://bolt.new",
-    rating: 4.5,
-    color: "bg-green-500",
-    affiliate: false,
-  },
-  {
-    name: "Aider",
-    description: "AI coding directly in your terminal - edit files with chat.",
-    category: "Terminal Tool",
-    link: "https://aider.chat",
-    rating: 4.5,
-    color: "bg-amber-500",
-    affiliate: false,
-  },
-  {
-    name: "Continue.dev",
-    description: "Open-source AI autopilot for VS Code and JetBrains.",
-    category: "IDE Extension",
-    link: "https://continue.dev",
-    rating: 4.6,
-    color: "bg-red-500",
-    affiliate: false,
-  },
-  {
-    name: "Replit AI",
-    description: "Powerful AI assistant built into Replit.",
-    category: "Coding Assistant",
-    link: "https://replit.com/ai",
-    rating: 4.4,
-    color: "bg-cyan-500",
-    affiliate: false,
-  },
+  { name: "v0 by Vercel", description: "Generate production-ready UI from text.", category: "UI Generation", link: "https://v0.dev", rating: 4.6, color: "bg-pink-500" },
+  { name: "Bolt.new", description: "Build full-stack apps instantly with AI.", category: "App Builder", link: "https://bolt.new", rating: 4.5, color: "bg-green-500" },
+  { name: "Aider", description: "AI coding in your terminal.", category: "Terminal Tool", link: "https://aider.chat", rating: 4.5, color: "bg-amber-500" },
+  { name: "Continue.dev", description: "Open-source AI autopilot for VS Code.", category: "IDE Extension", link: "https://continue.dev", rating: 4.6, color: "bg-red-500" },
 ];
 
 const allTools = [...codeGenerators, ...devTools];
 
-const categories = ["All", "Code Generator", "UI Generation", "App Builder", "IDE Extension", "Terminal Tool", "Coding Assistant"];
+const categories = ["All", "Code Generator", "UI Generation", "App Builder", "IDE Extension", "Terminal Tool"];
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
 
   const filteredTools = allTools.filter(tool => {
-    const matchesSearch = 
-      tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tool.description.toLowerCase().includes(searchTerm.toLowerCase());
-
+    const matchesSearch = tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          tool.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = activeCategory === "All" || tool.category === activeCategory;
-
     return matchesSearch && matchesCategory;
   });
 
@@ -126,7 +41,7 @@ export default function Home() {
             <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-xl">C</div>
             <h1 className="text-3xl font-bold">CodeOmniverse</h1>
           </div>
-          <div className="text-sm text-zinc-400 hidden md:block">Discover the best AI tools for developers</div>
+          <div className="text-sm text-zinc-400">Discover • Compare • Build Faster</div>
         </div>
       </header>
 
@@ -155,9 +70,7 @@ export default function Home() {
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
                 className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
-                  activeCategory === cat 
-                    ? "bg-blue-600 text-white shadow-lg" 
-                    : "bg-zinc-900 border border-zinc-700 hover:bg-zinc-800"
+                  activeCategory === cat ? "bg-blue-600 text-white" : "bg-zinc-900 border border-zinc-700 hover:bg-zinc-800"
                 }`}
               >
                 {cat}
@@ -169,35 +82,19 @@ export default function Home() {
         {/* Tools Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTools.map((tool, i) => (
-            <div
-              key={i}
-              className="group bg-zinc-900/70 border border-zinc-800 rounded-3xl p-8 hover:border-blue-500 hover:bg-zinc-900 transition-all duration-300 hover:-translate-y-1"
-            >
+            <div key={i} className="group bg-zinc-900/70 border border-zinc-800 rounded-3xl p-8 hover:border-blue-500 hover:bg-zinc-900 transition-all hover:-translate-y-1">
               <div className="flex items-center gap-4 mb-6">
-                <div className={`w-14 h-14 ${tool.color} rounded-2xl flex items-center justify-center text-white text-3xl font-bold`}>
-                  {tool.name[0]}
-                </div>
+                <div className={`w-14 h-14 ${tool.color} rounded-2xl flex items-center justify-center text-white text-3xl font-bold`}>{tool.name[0]}</div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-2xl">{tool.name}</h3>
-                  <span className="inline-block px-3 py-1 text-xs bg-zinc-800 rounded-full mt-1">
-                    {tool.category}
-                  </span>
+                  <span className="inline-block px-3 py-1 text-xs bg-zinc-800 rounded-full mt-1">{tool.category}</span>
                 </div>
                 <div className="text-amber-400">★ {tool.rating}</div>
               </div>
-
-              <p className="text-zinc-400 mb-8 line-clamp-3 text-[15px]">
-                {tool.description}
-              </p>
-
-              <a
-                href={tool.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full bg-white text-black font-semibold py-3.5 rounded-2xl hover:bg-zinc-200 transition-all group-hover:scale-105"
-              >
-                Visit Tool
-                <ExternalLink size={18} />
+              <p className="text-zinc-400 mb-8 line-clamp-3">{tool.description}</p>
+              <a href={tool.link} target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full bg-white text-black font-semibold py-3.5 rounded-2xl hover:bg-zinc-200 transition-all group-hover:scale-105">
+                Visit Tool <ExternalLink size={18} />
               </a>
             </div>
           ))}
@@ -209,8 +106,9 @@ export default function Home() {
           <h3 className="text-3xl font-semibold mb-3">Suggest a Tool</h3>
           <p className="text-zinc-400 mb-6">Know a great AI tool that should be here?</p>
           <a
-            href="https://x.com/karhyoone"
+            href="https://x.com/karhyoon"
             target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-2xl font-medium"
           >
             Message me on X
