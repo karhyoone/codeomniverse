@@ -13,9 +13,6 @@ const categories = [
       { name: "Claude", link: "https://claude.ai", desc: "Excellent for coding" },
       { name: "v0 by Vercel", link: "https://v0.dev", desc: "UI generator" },
       { name: "Bolt.new", link: "https://bolt.new", desc: "App builder" },
-      { name: "Replit Agent", link: "https://replit.com/ai", desc: "AI agent" },
-      { name: "Codeium", link: "https://codeium.com", desc: "Fast AI coding" },
-      { name: "Tabnine", link: "https://tabnine.com", desc: "AI code completion" },
     ]
   },
   {
@@ -23,47 +20,9 @@ const categories = [
     tools: [
       { name: "ChatGPT", link: "https://chat.openai.com", desc: "Conversational AI" },
       { name: "Perplexity AI", link: "https://perplexity.ai", desc: "AI search" },
-      { name: "Gemini", link: "https://gemini.google.com", desc: "Google AI" },
-      { name: "Microsoft Copilot", link: "https://copilot.microsoft.com", desc: "Microsoft AI" },
-    ]
-  },
-  {
-    name: "Video Generators & Editors",
-    tools: [
-      { name: "Synthesia", link: "https://synthesia.io", desc: "AI video with avatars" },
-      { name: "Runway", link: "https://runwayml.com", desc: "Advanced video generation" },
-      { name: "HeyGen", link: "https://heygen.com", desc: "AI avatar videos" },
-      { name: "Descript", link: "https://descript.com", desc: "AI video & audio editing" },
-      { name: "Lumen5", link: "https://lumen5.com", desc: "Text to video" },
-      { name: "Sora", link: "https://openai.com/sora", desc: "OpenAI video generation" },
-    ]
-  },
-  {
-    name: "Audio Generators & Editors",
-    tools: [
-      { name: "ElevenLabs", link: "https://elevenlabs.io", desc: "Ultra-realistic voice" },
-      { name: "Murf AI", link: "https://murf.ai", desc: "AI voiceover studio" },
-      { name: "Descript", link: "https://descript.com", desc: "AI audio editing" },
-    ]
-  },
-  {
-    name: "Image Generators",
-    tools: [
-      { name: "Midjourney", link: "https://midjourney.com", desc: "Best AI image generator" },
-      { name: "DALL·E 3", link: "https://chat.openai.com", desc: "OpenAI image generation" },
-      { name: "Leonardo.ai", link: "https://leonardo.ai", desc: "Powerful AI art platform" },
-      { name: "Adobe Firefly", link: "https://firefly.adobe.com", desc: "Adobe AI images" },
-      { name: "Canva Magic Studio", link: "https://canva.com", desc: "AI design tools" },
-    ]
-  },
-  {
-    name: "Writing Tools",
-    tools: [
-      { name: "Jasper AI", link: "https://jasper.ai", desc: "AI writing assistant" },
-      { name: "Copy.ai", link: "https://copy.ai", desc: "Fast copywriting" },
-      { name: "Rytr", link: "https://rytr.me", desc: "Affordable AI writer" },
-      { name: "Writesonic", link: "https://writesonic.com", desc: "SEO + AI writing" },
-      { name: "Grammarly", link: "https://grammarly.com", desc: "AI writing & grammar" },
+      { name: "Midjourney", link: "https://midjourney.com", desc: "Image generator" },
+      { name: "ElevenLabs", link: "https://elevenlabs.io", desc: "Voice synthesis" },
+      { name: "Jasper AI", link: "https://jasper.ai", desc: "Writing assistant" },
     ]
   }
 ];
@@ -75,11 +34,16 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white flex relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(at_top_right,#3b82f610_0%,transparent_50%)] animate-pulse" />
-      <div className="absolute inset-0 bg-[radial-gradient(at_bottom_left,#a855f710_0%,transparent_60%)] animate-pulse delay-1000" />
+      {/* Slow Animated Grok-style Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(59,130,246,0.18)_0%,transparent_60%)] animate-[pulse_28s_infinite_ease-in-out]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(249,115,22,0.18)_0%,transparent_60%)] animate-[pulse_32s_infinite_ease-in-out_delay-4s]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_80%,rgba(236,72,153,0.15)_0%,transparent_60%)] animate-[pulse_26s_infinite_ease-in-out_delay-9s]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_20%,rgba(234,179,8,0.15)_0%,transparent_60%)] animate-[pulse_35s_infinite_ease-in-out_delay-14s]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.10)_0%,transparent_60%)] animate-[pulse_40s_infinite_ease-in-out]"></div>
+      </div>
 
-      {/* Left Sidebar */}
+      {/* Left Sidebar - Unchanged */}
       <aside className="w-80 border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl flex flex-col h-screen overflow-y-auto z-10">
         <div className="p-6 border-b border-zinc-800">
           <div className="flex items-center gap-3 mb-8">
@@ -99,7 +63,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <div className="flex-1 p-4 space-y-2">
           {categories.map((cat) => (
             <div key={cat.name}>
               <button
@@ -143,27 +107,14 @@ export default function Home() {
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 p-10 overflow-y-auto relative z-10">
-        <div className="flex justify-end mb-12">
-          <a
-            href="https://x.com/karhyoon"
-            target="_blank"
-            className="flex items-center gap-2 px-6 py-3 border border-white/30 rounded-full hover:bg-white hover:text-black transition text-sm"
-          >
-            Suggest a Tool
-          </a>
-        </div>
-
-        <div className="max-w-4xl mx-auto h-full flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-6xl mb-6 opacity-80">🚀</div>
-            <h2 className="text-4xl font-semibold mb-4">Ready to Build</h2>
-            <p className="text-zinc-400 max-w-md mx-auto">
-              Choose a tool from the sidebar.<br />
-              The center area will soon support code generation and previews.
-            </p>
+      {/* Main Content Area with CodeOmniverse at Center */}
+      <main className="flex-1 flex items-center justify-center relative z-10 p-10">
+        <div className="text-center">
+          <div className="text-[160px] font-black tracking-[-0.05em] bg-gradient-to-br from-blue-400 via-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent opacity-30">
+            CO
           </div>
+          <h1 className="text-7xl font-bold tracking-tighter -mt-12 text-white">CodeOmniverse</h1>
+          <p className="text-xl text-zinc-400 mt-4">The universe of powerful AI tools</p>
         </div>
       </main>
 
