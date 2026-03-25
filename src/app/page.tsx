@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, ExternalLink, ChevronDown, Info } from "lucide-react";
 
 const categories = [
@@ -31,19 +31,108 @@ export default function Home() {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAbout, setShowAbout] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Interactive Particle Background
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const colors = ["#3b82f6", "#ec4899", "#f59e0b", "#a855f7", "#ffffff"];
+    let particles: { x: number; y: number; size: number; speedX: number; speedY: number; color: string }[] = [];
+
+    class Particle {
+      x: number;
+      y: number;
+      size: number;
+      speedX: number;
+      speedY: number;
+      color: string;
+
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.size = Math.random() * 2.5 + 0.8;
+        this.speedX = Math.random() * 0.6 - 0.3;
+        this.speedY = Math.random() * 0.6 - 0.3;
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+      }
+    }
+
+    // Create particles
+    for (let i = 0; i < 120; i++) {
+      particles.push(new Particle());
+    }
+
+    let mouseX = width / 2;
+    let mouseY = height / 2;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+
+    const animate = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      particles.forEach((p) => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+
+        // Gentle mouse interaction
+        const dx = mouseX - p.x;
+        const dy = mouseY - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          p.speedX += dx / 15000;
+          p.speedY += dy / 15000;
+        }
+
+        // Wrap around
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = 0.6;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    const resize = () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+
+    window.addEventListener("resize", resize);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-white flex relative overflow-hidden">
-      {/* Slow Animated Grok-style Background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(59,130,246,0.18)_0%,transparent_60%)] animate-[pulse_28s_infinite_ease-in-out]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(249,115,22,0.18)_0%,transparent_60%)] animate-[pulse_32s_infinite_ease-in-out_delay-4s]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_80%,rgba(236,72,153,0.15)_0%,transparent_60%)] animate-[pulse_26s_infinite_ease-in-out_delay-9s]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_20%,rgba(234,179,8,0.15)_0%,transparent_60%)] animate-[pulse_35s_infinite_ease-in-out_delay-14s]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.10)_0%,transparent_60%)] animate-[pulse_40s_infinite_ease-in-out]"></div>
-      </div>
+      {/* Particle Canvas */}
+      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
 
-      {/* Left Sidebar - Unchanged */}
+      {/* Left Sidebar */}
       <aside className="w-80 border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl flex flex-col h-screen overflow-y-auto z-10">
         <div className="p-6 border-b border-zinc-800">
           <div className="flex items-center gap-3 mb-8">
@@ -94,7 +183,6 @@ export default function Home() {
           ))}
         </div>
 
-        {/* About Button at Bottom Left */}
         <div className="p-6 border-t border-zinc-800 mt-auto">
           <button
             onMouseEnter={() => setShowAbout(true)}
@@ -107,18 +195,18 @@ export default function Home() {
         </div>
       </aside>
 
-      {/* Main Content Area with CodeOmniverse at Center */}
+      {/* Main Content Area */}
       <main className="flex-1 flex items-center justify-center relative z-10 p-10">
         <div className="text-center">
-          <div className="text-[160px] font-black tracking-[-0.05em] bg-gradient-to-br from-blue-400 via-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent opacity-30">
+          <div className="text-[170px] font-black tracking-[-0.05em] bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent opacity-25">
             CO
           </div>
-          <h1 className="text-7xl font-bold tracking-tighter -mt-12 text-white">CodeOmniverse</h1>
+          <h1 className="text-7xl font-bold tracking-tighter -mt-14 text-white">CodeOmniverse</h1>
           <p className="text-xl text-zinc-400 mt-4">The universe of powerful AI tools</p>
         </div>
       </main>
 
-      {/* About Popup on Hover */}
+      {/* About Popup */}
       {showAbout && (
         <div 
           className="fixed bottom-28 left-80 bg-zinc-900/95 border border-zinc-700 backdrop-blur-2xl rounded-3xl p-10 max-w-md shadow-2xl z-50"
@@ -127,15 +215,9 @@ export default function Home() {
         >
           <h2 className="text-2xl font-semibold mb-6">About CodeOmniverse</h2>
           <div className="text-zinc-300 leading-relaxed space-y-6 text-[15px]">
-            <p>
-              CodeOmniverse was created for developers who refuse to waste time searching through scattered tools and hype.
-            </p>
-            <p>
-              We cut through the noise and curate only the most powerful, reliable, and impactful AI tools — whether you're writing code, designing interfaces, generating content, or building entire products.
-            </p>
-            <p>
-              Our mission is simple: Help developers move faster, build better, and stay ahead in the rapidly evolving world of AI.
-            </p>
+            <p>CodeOmniverse was created for developers who refuse to waste time searching through scattered tools and hype.</p>
+            <p>We cut through the noise and curate only the most powerful, reliable, and impactful AI tools — whether you're writing code, designing interfaces, generating content, or building entire products.</p>
+            <p>Our mission is simple: Help developers move faster, build better, and stay ahead in the rapidly evolving world of AI.</p>
 
             <div className="pt-6 border-t border-zinc-700 grid grid-cols-1 gap-6">
               <div>
