@@ -37,99 +37,96 @@ export default function Home() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     const colors = ["#3b82f6", "#ec4899", "#f59e0b", "#a855f7", "#ffffff"];
-    let particles: { x: number; y: number; size: number; speedX: number; speedY: number; color: string }[] = [];
+    let particles: any[] = [];
 
     class Particle {
-      x: number;
-      y: number;
-      size: number;
-      speedX: number;
-      speedY: number;
-      color: string;
-
+      x: number; y: number; size: number; speedX: number; speedY: number; color: string;
       constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
+        this.x = Math.random() * canvas!.width;
+        this.y = Math.random() * canvas!.height;
         this.size = Math.random() * 2.5 + 0.8;
         this.speedX = Math.random() * 0.6 - 0.3;
         this.speedY = Math.random() * 0.6 - 0.3;
         this.color = colors[Math.floor(Math.random() * colors.length)];
       }
+      update(mouseX: number, mouseY: number) {
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        const dx = mouseX - this.x;
+        const dy = mouseY - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 160) {
+          this.speedX += dx / 15000;
+          this.speedY += dy / 15000;
+        }
+
+        if (this.x < 0) this.x = canvas!.width;
+        if (this.x > canvas!.width) this.x = 0;
+        if (this.y < 0) this.y = canvas!.height;
+        if (this.y > canvas!.height) this.y = 0;
+      }
+      draw() {
+        ctx!.fillStyle = this.color;
+        ctx!.globalAlpha = 0.65;
+        ctx!.beginPath();
+        ctx!.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx!.fill();
+      }
     }
 
-    // Create particles
-    for (let i = 0; i < 120; i++) {
-      particles.push(new Particle());
-    }
+    for (let i = 0; i < 130; i++) particles.push(new Particle());
 
-    let mouseX = width / 2;
-    let mouseY = height / 2;
+    let mouseX = canvas.width / 2;
+    let mouseY = canvas.height / 2;
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouse = (e: MouseEvent) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", handleMouse);
 
     const animate = () => {
-      ctx.clearRect(0, 0, width, height);
-
-      particles.forEach((p) => {
-        p.x += p.speedX;
-        p.y += p.speedY;
-
-        // Gentle mouse interaction
-        const dx = mouseX - p.x;
-        const dy = mouseY - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 150) {
-          p.speedX += dx / 15000;
-          p.speedY += dy / 15000;
-        }
-
-        // Wrap around
-        if (p.x < 0) p.x = width;
-        if (p.x > width) p.x = 0;
-        if (p.y < 0) p.y = height;
-        if (p.y > height) p.y = 0;
-
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = 0.6;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update(mouseX, mouseY);
+        p.draw();
       });
-
       requestAnimationFrame(animate);
     };
 
     animate();
 
     const resize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     };
-
     window.addEventListener("resize", resize);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mousemove", handleMouse);
       window.removeEventListener("resize", resize);
     };
   }, []);
 
+  const filteredTools = categories.flatMap(cat => 
+    cat.tools.filter(tool => 
+      tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tool.desc.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
+
   return (
     <div className="min-h-screen bg-black text-white flex relative overflow-hidden">
-      {/* Particle Canvas */}
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
 
       {/* Left Sidebar */}
@@ -218,23 +215,10 @@ export default function Home() {
             <p>CodeOmniverse was created for developers who refuse to waste time searching through scattered tools and hype.</p>
             <p>We cut through the noise and curate only the most powerful, reliable, and impactful AI tools — whether you're writing code, designing interfaces, generating content, or building entire products.</p>
             <p>Our mission is simple: Help developers move faster, build better, and stay ahead in the rapidly evolving world of AI.</p>
-
             <div className="pt-6 border-t border-zinc-700 grid grid-cols-1 gap-6">
-              <div>
-                <div className="text-blue-400 text-2xl mb-2">🔍</div>
-                <strong>Curated Excellence</strong>
-                <p className="text-sm text-zinc-400 mt-1">We test and review every tool before adding it. Only the best make the cut.</p>
-              </div>
-              <div>
-                <div className="text-blue-400 text-2xl mb-2">⚡</div>
-                <strong>Built for Speed</strong>
-                <p className="text-sm text-zinc-400 mt-1">We focus on tools that genuinely save time and boost productivity.</p>
-              </div>
-              <div>
-                <div className="text-blue-400 text-2xl mb-2">🌍</div>
-                <strong>For Real Developers</strong>
-                <p className="text-sm text-zinc-400 mt-1">Made by developers, for developers who ship products.</p>
-              </div>
+              <div><div className="text-blue-400 text-2xl mb-2">🔍</div><strong>Curated Excellence</strong><p className="text-sm text-zinc-400 mt-1">We test and review every tool before adding it. Only the best make the cut.</p></div>
+              <div><div className="text-blue-400 text-2xl mb-2">⚡</div><strong>Built for Speed</strong><p className="text-sm text-zinc-400 mt-1">We focus on tools that genuinely save time and boost productivity.</p></div>
+              <div><div className="text-blue-400 text-2xl mb-2">🌍</div><strong>For Real Developers</strong><p className="text-sm text-zinc-400 mt-1">Made by developers, for developers who ship products.</p></div>
             </div>
           </div>
         </div>
