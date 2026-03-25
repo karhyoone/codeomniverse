@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, ExternalLink, ChevronDown, Info, Code, Video, Mic, Scissors, Zap } from "lucide-react";
+import { Search, ExternalLink, ChevronDown, Info, Code, Video, Mic, Scissors, Zap, Copy } from "lucide-react";
+import Editor from "@monaco-editor/react";
 
 const categories = [
   {
@@ -51,10 +52,17 @@ export default function Home() {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAbout, setShowAbout] = useState(false);
-  const [activeTab, setActiveTab] = useState("code");
+  const [activeTab, setActiveTab] = useState<"code" | "video" | "audio" | "editing" | "builder">("code");
+
+  // Code Playground states
+  const [prompt, setPrompt] = useState("");
+  const [selectedLang, setSelectedLang] = useState("javascript");
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Particle Background (unchanged, solid)
+  // Particle Background
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -68,7 +76,7 @@ export default function Home() {
     resize();
 
     const colors = ["#3b82f6", "#ec4899", "#f59e0b", "#a855f7", "#ffffff"];
-    const particles: ParticleClass[] = [];
+    const particles: any[] = [];
 
     class ParticleClass {
       x: number; y: number; size: number; speedX: number; speedY: number; color: string;
@@ -89,21 +97,30 @@ export default function Home() {
         if (this.y < 0) this.y = canvasHeight; if (this.y > canvasHeight) this.y = 0;
       }
       draw(context: CanvasRenderingContext2D) {
-        context.globalAlpha = 0.65; context.fillStyle = this.color;
-        context.beginPath(); context.arc(this.x, this.y, this.size, 0, Math.PI * 2); context.fill();
+        context.globalAlpha = 0.65;
+        context.fillStyle = this.color;
+        context.beginPath();
+        context.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        context.fill();
       }
     }
 
-    for (let i = 0; i < 130; i++) particles.push(new ParticleClass(canvas.width, canvas.height));
+    for (let i = 0; i < 130; i++) {
+      particles.push(new ParticleClass(canvas.width, canvas.height));
+    }
 
     let mouseX = canvas.width / 2, mouseY = canvas.height / 2;
     const handleMouse = (e: MouseEvent) => { mouseX = e.clientX; mouseY = e.clientY; };
+
     window.addEventListener("mousemove", handleMouse);
     window.addEventListener("resize", resize);
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(p => { p.update(mouseX, mouseY, canvas.width, canvas.height); p.draw(ctx); });
+      particles.forEach(p => {
+        p.update(mouseX, mouseY, canvas.width, canvas.height);
+        p.draw(ctx);
+      });
       requestAnimationFrame(animate);
     };
     animate();
@@ -114,11 +131,46 @@ export default function Home() {
     };
   }, []);
 
+  // Secure Generate Code Function
+  const handleGenerateCode = async () => {
+    if (!prompt.trim()) return;
+
+    setIsGenerating(true);
+    setGeneratedCode("");
+
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, language: selectedLang }),
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+        setGeneratedCode(`// Error: ${data.error}`);
+      } else {
+        setGeneratedCode(data.code);
+      }
+    } catch (error) {
+      setGeneratedCode("// Network error. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const copyCode = () => {
+    if (generatedCode) {
+      navigator.clipboard.writeText(generatedCode);
+      alert("Code copied to clipboard!");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white flex relative overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
 
-      {/* Sidebar - Expanded Categories */}
+      {/* Sidebar */}
       <aside className="w-80 border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl flex flex-col h-screen overflow-y-auto z-10">
         <div className="p-6 border-b border-zinc-800">
           <div className="flex items-center gap-3 mb-8">
@@ -140,16 +192,23 @@ export default function Home() {
         <div className="flex-1 p-4 space-y-2">
           {categories.map(cat => (
             <div key={cat.name}>
-              <button onClick={() => setOpenCategory(openCategory === cat.name ? null : cat.name)}
-                className="w-full flex justify-between items-center px-4 py-3 hover:bg-zinc-900 rounded-2xl text-left font-medium">
+              <button 
+                onClick={() => setOpenCategory(openCategory === cat.name ? null : cat.name)}
+                className="w-full flex justify-between items-center px-4 py-3 hover:bg-zinc-900 rounded-2xl text-left font-medium"
+              >
                 {cat.name}
                 <ChevronDown size={18} className={`transition ${openCategory === cat.name ? "rotate-180" : ""}`} />
               </button>
               {openCategory === cat.name && (
                 <div className="pl-6 mt-1 space-y-1">
                   {cat.tools.map(tool => (
-                    <a key={tool.name} href={tool.link} target="_blank" rel="noopener noreferrer"
-                      className="block py-2.5 px-4 text-sm text-zinc-300 hover:text-violet-400 hover:bg-zinc-900 rounded-2xl transition flex justify-between items-center">
+                    <a 
+                      key={tool.name} 
+                      href={tool.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="block py-2.5 px-4 text-sm text-zinc-300 hover:text-violet-400 hover:bg-zinc-900 rounded-2xl transition flex justify-between items-center"
+                    >
                       {tool.name}
                       <ExternalLink size={15} />
                     </a>
@@ -161,8 +220,11 @@ export default function Home() {
         </div>
 
         <div className="p-6 border-t border-zinc-800 mt-auto">
-          <button onMouseEnter={() => setShowAbout(true)} onMouseLeave={() => setShowAbout(false)}
-            className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white w-full px-4 py-3 hover:bg-zinc-900 rounded-2xl">
+          <button 
+            onMouseEnter={() => setShowAbout(true)} 
+            onMouseLeave={() => setShowAbout(false)}
+            className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white w-full px-4 py-3 hover:bg-zinc-900 rounded-2xl"
+          >
             <Info size={18} /> About Multiverse
           </button>
         </div>
@@ -177,31 +239,100 @@ export default function Home() {
           { id: "editing", label: "Media Editor", icon: Scissors },
           { id: "builder", label: "Multiverse Builder", icon: Zap },
         ].map(tab => (
-          <button key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-medium transition ${activeTab === tab.id ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
+          <button 
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-medium transition ${activeTab === tab.id ? "bg-white text-black" : "hover:bg-zinc-900"}`}
+          >
             <tab.icon size={18} />
             {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Main Content Area */}
-      <main className="flex-1 pt-20 flex items-center justify-center relative z-10 p-10">
-        <div className="text-center max-w-2xl">
-          <div className="text-[180px] font-black tracking-[-0.07em] bg-gradient-to-br from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent opacity-20 select-none">MV</div>
-          <h1 className="text-7xl font-bold tracking-tighter -mt-16">Welcome to Multiverse</h1>
-          <p className="text-2xl text-zinc-400 mt-3">The center of all AI creation — code, video, audio, and beyond.</p>
-          <p className="text-zinc-500 mt-8 text-lg">Choose a tab above to start building anything.</p>
-        </div>
+      {/* Main Content */}
+      <main className="flex-1 pt-20 relative z-10 p-10">
+        {activeTab === "code" && (
+          <div className="max-w-5xl mx-auto">
+            {/* Prompt Bar */}
+            <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 mb-8">
+              <div className="flex gap-4 mb-6">
+                <select
+                  value={selectedLang}
+                  onChange={(e) => setSelectedLang(e.target.value)}
+                  className="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm focus:outline-none"
+                >
+                  <option value="javascript">JavaScript</option>
+                  <option value="typescript">TypeScript</option>
+                  <option value="python">Python</option>
+                  <option value="rust">Rust</option>
+                  <option value="go">Go</option>
+                  <option value="html">HTML/CSS</option>
+                </select>
+
+                <input
+                  type="text"
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="Describe what you want to build... (e.g. React todo app with dark mode)"
+                  className="flex-1 bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-violet-500"
+                />
+
+                <button
+                  onClick={handleGenerateCode}
+                  disabled={isGenerating || !prompt.trim()}
+                  className="bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 px-8 py-4 rounded-2xl font-medium flex items-center gap-2 transition"
+                >
+                  {isGenerating ? "Generating..." : "Generate Code"}
+                </button>
+              </div>
+            </div>
+
+            {/* Generated Code Editor */}
+            {generatedCode && (
+              <div className="bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden">
+                <div className="p-4 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between">
+                  <span className="font-medium">Generated {selectedLang} Code</span>
+                  <button onClick={copyCode} className="flex items-center gap-2 text-zinc-400 hover:text-white">
+                    <Copy size={18} /> Copy
+                  </button>
+                </div>
+                <Editor
+                  height="600px"
+                  language={selectedLang === "html" ? "html" : selectedLang}
+                  value={generatedCode}
+                  theme="vs-dark"
+                  options={{ minimap: { enabled: false }, fontSize: 15, wordWrap: "on" }}
+                />
+              </div>
+            )}
+
+            {!generatedCode && (
+              <div className="text-center py-20 text-zinc-500">
+                Enter a prompt above and hit Generate to start building.
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab !== "code" && (
+          <div className="text-center py-32">
+            <div className="text-6xl mb-6">🚧</div>
+            <h2 className="text-4xl font-bold mb-4">Coming Soon</h2>
+            <p className="text-xl text-zinc-400">Video Studio, Audio Lab, Media Editor and Multiverse Builder will be added in the next steps.</p>
+          </div>
+        )}
       </main>
 
       {/* About Popup */}
       {showAbout && (
-        <div className="fixed bottom-28 left-80 bg-zinc-900/95 border border-zinc-700 backdrop-blur-2xl rounded-3xl p-10 max-w-md shadow-2xl z-50"
-          onMouseEnter={() => setShowAbout(true)} onMouseLeave={() => setShowAbout(false)}>
+        <div 
+          className="fixed bottom-28 left-80 bg-zinc-900/95 border border-zinc-700 backdrop-blur-2xl rounded-3xl p-10 max-w-md shadow-2xl z-50"
+          onMouseEnter={() => setShowAbout(true)} 
+          onMouseLeave={() => setShowAbout(false)}
+        >
           <h2 className="text-2xl font-semibold mb-6">About Multiverse</h2>
-          <p className="text-zinc-300">Your all-in-one AI hub. Generate code in any language, create videos, audio, edit media — everything from one place.</p>
+          <p className="text-zinc-300">Your all-in-one AI hub for code, video, audio, and everything in between.</p>
         </div>
       )}
     </div>
