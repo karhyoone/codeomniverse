@@ -51,7 +51,7 @@ export default function Home() {
       constructor() {
         this.x = Math.random() * canvas!.width;
         this.y = Math.random() * canvas!.height;
-        this.size = Math.random() * 2.5 + 0.8;
+        this.size = Math.random() * 2.2 + 0.8;
         this.speedX = Math.random() * 0.6 - 0.3;
         this.speedY = Math.random() * 0.6 - 0.3;
         this.color = colors[Math.floor(Math.random() * colors.length)];
@@ -85,18 +85,18 @@ export default function Home() {
 
     for (let i = 0; i < 130; i++) particles.push(new Particle());
 
-    let mouseX = canvas!.width / 2;
-    let mouseY = canvas!.height / 2;
+    let mouseX = canvas.width / 2;
+    let mouseY = canvas.height / 2;
 
-    const handleMouse = (e: MouseEvent) => {
+    const handleMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
     };
 
-    window.addEventListener("mousemove", handleMouse);
+    window.addEventListener("mousemove", handleMouseMove);
 
     const animate = () => {
-      ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       particles.forEach(p => {
         p.update(mouseX, mouseY);
         p.draw();
@@ -113,11 +113,12 @@ export default function Home() {
     window.addEventListener("resize", resize);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouse);
+      window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("resize", resize);
     };
   }, []);
 
+  // Fixed Live Search - works like Google
   const filteredTools = categories.flatMap(cat => 
     cat.tools.filter(tool => 
       tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
