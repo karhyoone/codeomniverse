@@ -173,7 +173,7 @@ export default function Home() {
     }
   };
 
-  // AI Hover Explanation (real call to Grok)
+  // AI Hover Explanation
   const handleEditorDidMount = (editor: any) => {
     editorRef.current = editor;
 
@@ -192,7 +192,7 @@ export default function Home() {
           body: JSON.stringify({
             language: selectedLang,
             line: lineContent.trim(),
-            context: generatedCode.substring(0, 800), // send some context
+            context: generatedCode.substring(0, 800),
           }),
         })
           .then(r => r.json())
@@ -206,12 +206,12 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white flex relative overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
 
-      {/* Sidebar */}
+      {/* Sidebar - Changed to CodeOmniverse */}
       <aside className="w-80 border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl flex flex-col h-screen overflow-y-auto z-10">
         <div className="p-6 border-b border-zinc-800">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-9 h-9 bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">M</div>
-            <h1 className="text-3xl font-bold tracking-tighter">Multiverse</h1>
+            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">C</div>
+            <h1 className="text-3xl font-bold tracking-tighter">CodeOmniverse</h1>
           </div>
           <div className="relative">
             <Search className="absolute left-4 top-3.5 text-zinc-400" size={18} />
@@ -256,7 +256,7 @@ export default function Home() {
             onMouseLeave={() => setShowAbout(false)}
             className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white w-full px-4 py-3 hover:bg-zinc-900 rounded-2xl"
           >
-            <Info size={18} /> About Multiverse
+            <Info size={18} /> About CodeOmniverse
           </button>
         </div>
       </aside>
@@ -268,7 +268,7 @@ export default function Home() {
           { id: "video", label: "Video Studio", icon: Video },
           { id: "audio", label: "Audio Lab", icon: Mic },
           { id: "editing", label: "Media Editor", icon: Scissors },
-          { id: "builder", label: "Multiverse Builder", icon: Zap },
+          { id: "builder", label: "CodeOmniverse Builder", icon: Zap },
         ].map(tab => (
           <button 
             key={tab.id}
