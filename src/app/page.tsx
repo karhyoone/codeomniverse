@@ -85,8 +85,8 @@ export default function Home() {
 
     for (let i = 0; i < 130; i++) particles.push(new Particle());
 
-    let mouseX = canvas.width / 2;
-    let mouseY = canvas.height / 2;
+    let mouseX = canvas!.width / 2;
+    let mouseY = canvas!.height / 2;
 
     const handleMouse = (e: MouseEvent) => {
       mouseX = e.clientX;
@@ -96,7 +96,7 @@ export default function Home() {
     window.addEventListener("mousemove", handleMouse);
 
     const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
       particles.forEach(p => {
         p.update(mouseX, mouseY);
         p.draw();
