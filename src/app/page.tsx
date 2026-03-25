@@ -1,176 +1,155 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, ExternalLink, ChevronDown, Info } from "lucide-react";
+import { Search, ExternalLink, ChevronDown, Info, Code, Video, Mic, Scissors, Zap } from "lucide-react";
 
 const categories = [
   {
-    name: "AI Code Generators",
+    name: "AI Code & Dev Tools (2026)",
     tools: [
-      { name: "Grok 4", link: "https://grok.x.ai", desc: "xAI's powerful AI" },
-      { name: "Cursor", link: "https://cursor.com", desc: "AI-first code editor" },
-      { name: "GitHub Copilot", link: "https://github.com/features/copilot", desc: "AI pair programmer" },
-      { name: "Claude", link: "https://claude.ai", desc: "Excellent for coding" },
-      { name: "v0 by Vercel", link: "https://v0.dev", desc: "UI generator" },
-      { name: "Bolt.new", link: "https://bolt.new", desc: "App builder" },
-    ]
+      { name: "Claude Code", link: "https://claude.ai", desc: "Best agentic coding 2026" },
+      { name: "Cursor", link: "https://cursor.com", desc: "AI-first IDE" },
+      { name: "GitHub Copilot", link: "https://github.com/features/copilot", desc: "VS Code powerhouse" },
+      { name: "Grok 4", link: "https://grok.x.ai", desc: "xAI coding beast" },
+      { name: "Codex", link: "https://openai.com", desc: "OpenAI code agent" },
+      { name: "Windsurf", link: "https://windsurf.ai", desc: "Next-gen coding" },
+    ],
   },
   {
-    name: "General AI Tools",
+    name: "Video Generation & Editing",
     tools: [
-      { name: "ChatGPT", link: "https://chat.openai.com", desc: "Conversational AI" },
-      { name: "Perplexity AI", link: "https://perplexity.ai", desc: "AI search" },
-      { name: "Midjourney", link: "https://midjourney.com", desc: "Image generator" },
-      { name: "ElevenLabs", link: "https://elevenlabs.io", desc: "Voice synthesis" },
-      { name: "Jasper AI", link: "https://jasper.ai", desc: "Writing assistant" },
-    ]
-  }
+      { name: "Google Veo 3.1", link: "https://google.com/veo", desc: "Best overall text-to-video" },
+      { name: "Runway Gen-4.5", link: "https://runwayml.com", desc: "Cinematic control" },
+      { name: "OpenAI Sora 2", link: "https://openai.com/sora", desc: "Storytelling videos" },
+      { name: "Kling 3", link: "https://kling.ai", desc: "High-action realism" },
+      { name: "HeyGen", link: "https://heygen.com", desc: "AI avatars & talking heads" },
+      { name: "Vizard.ai", link: "https://vizard.ai", desc: "Long-to-short editing" },
+    ],
+  },
+  {
+    name: "Audio & Voice Tools",
+    tools: [
+      { name: "ElevenLabs", link: "https://elevenlabs.io", desc: "Most realistic voice 2026" },
+      { name: "Murf AI", link: "https://murf.ai", desc: "Studio voiceovers" },
+      { name: "Play.ht", link: "https://play.ht", desc: "Multilingual TTS" },
+      { name: "WellSaid Labs", link: "https://wellsaid.com", desc: "Enterprise voices" },
+      { name: "Resemble AI", link: "https://resemble.ai", desc: "Voice cloning" },
+    ],
+  },
+  {
+    name: "Text-to-Media & Assistants",
+    tools: [
+      { name: "Fliki", link: "https://fliki.ai", desc: "Text → video + voice" },
+      { name: "Synthesia", link: "https://synthesia.io", desc: "Avatar videos" },
+      { name: "Pictory", link: "https://pictory.ai", desc: "Blog → video" },
+      { name: "CapCut AI", link: "https://capcut.com", desc: "Free editing + AI" },
+    ],
+  },
 ];
 
 export default function Home() {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAbout, setShowAbout] = useState(false);
+  const [activeTab, setActiveTab] = useState("code");
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Interactive Particle Background
+  // Particle Background (unchanged, solid)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
 
     const colors = ["#3b82f6", "#ec4899", "#f59e0b", "#a855f7", "#ffffff"];
-    let particles: any[] = [];
+    const particles: ParticleClass[] = [];
 
-    class Particle {
+    class ParticleClass {
       x: number; y: number; size: number; speedX: number; speedY: number; color: string;
-      constructor() {
-        this.x = Math.random() * canvas!.width;
-        this.y = Math.random() * canvas!.height;
+      constructor(canvasWidth: number, canvasHeight: number) {
+        this.x = Math.random() * canvasWidth;
+        this.y = Math.random() * canvasHeight;
         this.size = Math.random() * 2.2 + 0.8;
         this.speedX = Math.random() * 0.6 - 0.3;
         this.speedY = Math.random() * 0.6 - 0.3;
         this.color = colors[Math.floor(Math.random() * colors.length)];
       }
-      update(mouseX: number, mouseY: number) {
-        this.x += this.speedX;
-        this.y += this.speedY;
-
-        const dx = mouseX - this.x;
-        const dy = mouseY - this.y;
+      update(mouseX: number, mouseY: number, canvasWidth: number, canvasHeight: number) {
+        this.x += this.speedX; this.y += this.speedY;
+        const dx = mouseX - this.x, dy = mouseY - this.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < 160) {
-          this.speedX += dx / 15000;
-          this.speedY += dy / 15000;
-        }
-
-        if (this.x < 0) this.x = canvas!.width;
-        if (this.x > canvas!.width) this.x = 0;
-        if (this.y < 0) this.y = canvas!.height;
-        if (this.y > canvas!.height) this.y = 0;
+        if (dist < 160) { this.speedX += dx / 15000; this.speedY += dy / 15000; }
+        if (this.x < 0) this.x = canvasWidth; if (this.x > canvasWidth) this.x = 0;
+        if (this.y < 0) this.y = canvasHeight; if (this.y > canvasHeight) this.y = 0;
       }
-      draw() {
-        ctx!.fillStyle = this.color;
-        ctx!.globalAlpha = 0.65;
-        ctx!.beginPath();
-        ctx!.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx!.fill();
+      draw(context: CanvasRenderingContext2D) {
+        context.globalAlpha = 0.65; context.fillStyle = this.color;
+        context.beginPath(); context.arc(this.x, this.y, this.size, 0, Math.PI * 2); context.fill();
       }
     }
 
-    for (let i = 0; i < 130; i++) particles.push(new Particle());
+    for (let i = 0; i < 130; i++) particles.push(new ParticleClass(canvas.width, canvas.height));
 
-    let mouseX = canvas.width / 2;
-    let mouseY = canvas.height / 2;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
+    let mouseX = canvas.width / 2, mouseY = canvas.height / 2;
+    const handleMouse = (e: MouseEvent) => { mouseX = e.clientX; mouseY = e.clientY; };
+    window.addEventListener("mousemove", handleMouse);
+    window.addEventListener("resize", resize);
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(p => {
-        p.update(mouseX, mouseY);
-        p.draw();
-      });
+      particles.forEach(p => { p.update(mouseX, mouseY, canvas.width, canvas.height); p.draw(ctx); });
       requestAnimationFrame(animate);
     };
-
     animate();
 
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    window.addEventListener("resize", resize);
-
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mousemove", handleMouse);
       window.removeEventListener("resize", resize);
     };
   }, []);
-
-  // Fixed Live Search - works like Google
-  const filteredTools = categories.flatMap(cat => 
-    cat.tools.filter(tool => 
-      tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tool.desc.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
 
   return (
     <div className="min-h-screen bg-black text-white flex relative overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
 
-      {/* Left Sidebar */}
+      {/* Sidebar - Expanded Categories */}
       <aside className="w-80 border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl flex flex-col h-screen overflow-y-auto z-10">
         <div className="p-6 border-b border-zinc-800">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">C</div>
-            <h1 className="text-2xl font-semibold tracking-tight">CodeOmniverse</h1>
+            <div className="w-9 h-9 bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">M</div>
+            <h1 className="text-3xl font-bold tracking-tighter">Multiverse</h1>
           </div>
-
           <div className="relative">
             <Search className="absolute left-4 top-3.5 text-zinc-400" size={18} />
             <input
               type="text"
-              placeholder="Search tools..."
+              placeholder="Search any AI tool..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 rounded-xl pl-11 py-3 text-sm focus:outline-none focus:border-blue-500"
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl pl-11 py-3 text-sm focus:outline-none focus:border-violet-500"
             />
           </div>
         </div>
 
         <div className="flex-1 p-4 space-y-2">
-          {categories.map((cat) => (
+          {categories.map(cat => (
             <div key={cat.name}>
-              <button
-                onClick={() => setOpenCategory(openCategory === cat.name ? null : cat.name)}
-                className="w-full flex justify-between items-center px-4 py-3 hover:bg-zinc-900 rounded-xl text-left font-medium transition"
-              >
+              <button onClick={() => setOpenCategory(openCategory === cat.name ? null : cat.name)}
+                className="w-full flex justify-between items-center px-4 py-3 hover:bg-zinc-900 rounded-2xl text-left font-medium">
                 {cat.name}
                 <ChevronDown size={18} className={`transition ${openCategory === cat.name ? "rotate-180" : ""}`} />
               </button>
-
               {openCategory === cat.name && (
                 <div className="pl-6 mt-1 space-y-1">
-                  {cat.tools.map((tool) => (
-                    <a
-                      key={tool.name}
-                      href={tool.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block py-2.5 px-4 text-sm text-zinc-300 hover:text-blue-400 hover:bg-zinc-900 rounded-xl transition flex justify-between"
-                    >
+                  {cat.tools.map(tool => (
+                    <a key={tool.name} href={tool.link} target="_blank" rel="noopener noreferrer"
+                      className="block py-2.5 px-4 text-sm text-zinc-300 hover:text-violet-400 hover:bg-zinc-900 rounded-2xl transition flex justify-between items-center">
                       {tool.name}
                       <ExternalLink size={15} />
                     </a>
@@ -182,46 +161,47 @@ export default function Home() {
         </div>
 
         <div className="p-6 border-t border-zinc-800 mt-auto">
-          <button
-            onMouseEnter={() => setShowAbout(true)}
-            onMouseLeave={() => setShowAbout(false)}
-            className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition w-full px-4 py-3 hover:bg-zinc-900 rounded-xl"
-          >
-            <Info size={18} />
-            About CodeOmniverse
+          <button onMouseEnter={() => setShowAbout(true)} onMouseLeave={() => setShowAbout(false)}
+            className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white w-full px-4 py-3 hover:bg-zinc-900 rounded-2xl">
+            <Info size={18} /> About Multiverse
           </button>
         </div>
       </aside>
 
+      {/* Top Tabs */}
+      <div className="absolute top-6 left-80 right-0 z-20 flex gap-2 px-8">
+        {[
+          { id: "code", label: "Code Playground", icon: Code },
+          { id: "video", label: "Video Studio", icon: Video },
+          { id: "audio", label: "Audio Lab", icon: Mic },
+          { id: "editing", label: "Media Editor", icon: Scissors },
+          { id: "builder", label: "Multiverse Builder", icon: Zap },
+        ].map(tab => (
+          <button key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-medium transition ${activeTab === tab.id ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
+            <tab.icon size={18} />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {/* Main Content Area */}
-      <main className="flex-1 flex items-center justify-center relative z-10 p-10">
-        <div className="text-center">
-          <div className="text-[170px] font-black tracking-[-0.05em] bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent opacity-25">
-            CO
-          </div>
-          <h1 className="text-7xl font-bold tracking-tighter -mt-14 text-white">CodeOmniverse</h1>
-          <p className="text-xl text-zinc-400 mt-4">The universe of powerful AI tools</p>
+      <main className="flex-1 pt-20 flex items-center justify-center relative z-10 p-10">
+        <div className="text-center max-w-2xl">
+          <div className="text-[180px] font-black tracking-[-0.07em] bg-gradient-to-br from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent opacity-20 select-none">MV</div>
+          <h1 className="text-7xl font-bold tracking-tighter -mt-16">Welcome to Multiverse</h1>
+          <p className="text-2xl text-zinc-400 mt-3">The center of all AI creation — code, video, audio, and beyond.</p>
+          <p className="text-zinc-500 mt-8 text-lg">Choose a tab above to start building anything.</p>
         </div>
       </main>
 
       {/* About Popup */}
       {showAbout && (
-        <div 
-          className="fixed bottom-28 left-80 bg-zinc-900/95 border border-zinc-700 backdrop-blur-2xl rounded-3xl p-10 max-w-md shadow-2xl z-50"
-          onMouseEnter={() => setShowAbout(true)}
-          onMouseLeave={() => setShowAbout(false)}
-        >
-          <h2 className="text-2xl font-semibold mb-6">About CodeOmniverse</h2>
-          <div className="text-zinc-300 leading-relaxed space-y-6 text-[15px]">
-            <p>CodeOmniverse was created for developers who refuse to waste time searching through scattered tools and hype.</p>
-            <p>We cut through the noise and curate only the most powerful, reliable, and impactful AI tools — whether you're writing code, designing interfaces, generating content, or building entire products.</p>
-            <p>Our mission is simple: Help developers move faster, build better, and stay ahead in the rapidly evolving world of AI.</p>
-            <div className="pt-6 border-t border-zinc-700 grid grid-cols-1 gap-6">
-              <div><div className="text-blue-400 text-2xl mb-2">🔍</div><strong>Curated Excellence</strong><p className="text-sm text-zinc-400 mt-1">We test and review every tool before adding it. Only the best make the cut.</p></div>
-              <div><div className="text-blue-400 text-2xl mb-2">⚡</div><strong>Built for Speed</strong><p className="text-sm text-zinc-400 mt-1">We focus on tools that genuinely save time and boost productivity.</p></div>
-              <div><div className="text-blue-400 text-2xl mb-2">🌍</div><strong>For Real Developers</strong><p className="text-sm text-zinc-400 mt-1">Made by developers, for developers who ship products.</p></div>
-            </div>
-          </div>
+        <div className="fixed bottom-28 left-80 bg-zinc-900/95 border border-zinc-700 backdrop-blur-2xl rounded-3xl p-10 max-w-md shadow-2xl z-50"
+          onMouseEnter={() => setShowAbout(true)} onMouseLeave={() => setShowAbout(false)}>
+          <h2 className="text-2xl font-semibold mb-6">About Multiverse</h2>
+          <p className="text-zinc-300">Your all-in-one AI hub. Generate code in any language, create videos, audio, edit media — everything from one place.</p>
         </div>
       )}
     </div>
