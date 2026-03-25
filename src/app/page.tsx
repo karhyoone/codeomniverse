@@ -33,9 +33,13 @@ export default function Home() {
   const [showAbout, setShowAbout] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white flex">
-      {/* Left Sidebar - Professional with subtle color */}
-      <aside className="w-80 border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl flex flex-col h-screen overflow-y-auto">
+    <div className="min-h-screen bg-black text-white flex relative overflow-hidden">
+      {/* Animated Background Glows */}
+      <div className="absolute inset-0 bg-[radial-gradient(at_top_right,#3b82f610_0%,transparent_50%)] animate-pulse" />
+      <div className="absolute inset-0 bg-[radial-gradient(at_bottom_left,#a855f710_0%,transparent_60%)] animate-pulse delay-1000" />
+
+      {/* Left Sidebar */}
+      <aside className="w-80 border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl flex flex-col h-screen overflow-y-auto z-10">
         <div className="p-6 border-b border-zinc-800">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-9 h-9 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">C</div>
@@ -49,7 +53,7 @@ export default function Home() {
               placeholder="Search tools..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 rounded-xl pl-11 py-3 text-sm focus:outline-none focus:border-blue-500 placeholder-zinc-500"
+              className="w-full bg-zinc-900 border border-zinc-700 rounded-xl pl-11 py-3 text-sm focus:outline-none focus:border-blue-500"
             />
           </div>
         </div>
@@ -99,7 +103,7 @@ export default function Home() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-10 overflow-y-auto">
+      <main className="flex-1 p-10 overflow-y-auto relative z-10">
         {/* Top Right Suggest Button */}
         <div className="flex justify-end mb-12">
           <a
@@ -111,32 +115,27 @@ export default function Home() {
           </a>
         </div>
 
-        {/* Hero */}
-        <div className="max-w-3xl mx-auto text-center mb-20">
-          <h1 className="text-6xl font-bold tracking-tighter mb-6 bg-gradient-to-r from-white via-zinc-300 to-zinc-400 bg-clip-text text-transparent">
-            Welcome to CodeOmniverse
-          </h1>
-          <p className="text-xl text-zinc-400">
-            Select a tool from the sidebar or explore the About section.
-          </p>
-        </div>
-
-        {/* Center Placeholder */}
-        <div className="max-w-4xl mx-auto bg-zinc-900/70 border border-zinc-700 backdrop-blur-xl rounded-3xl p-16 text-center">
-          <p className="text-zinc-400">
-            This central area is reserved for future features like AI code generation, live previews, and more.
-          </p>
+        {/* Center Area */}
+        <div className="max-w-4xl mx-auto h-full flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-6xl mb-6 opacity-80">🚀</div>
+            <h2 className="text-4xl font-semibold mb-4">Ready to Build</h2>
+            <p className="text-zinc-400 max-w-md mx-auto">
+              Choose a tool from the sidebar.<br />
+              The center area will soon support code generation and previews.
+            </p>
+          </div>
         </div>
       </main>
 
       {/* About Popup on Hover */}
       {showAbout && (
         <div 
-          className="fixed bottom-28 left-80 bg-zinc-900 border border-zinc-700 rounded-3xl p-10 max-w-md shadow-2xl z-50 backdrop-blur-xl"
+          className="fixed bottom-28 left-80 bg-zinc-900/95 border border-zinc-700 backdrop-blur-2xl rounded-3xl p-10 max-w-md shadow-2xl z-50"
           onMouseEnter={() => setShowAbout(true)}
           onMouseLeave={() => setShowAbout(false)}
         >
-          <h2 className="text-2xl font-semibold mb-6 text-white">About CodeOmniverse</h2>
+          <h2 className="text-2xl font-semibold mb-6">About CodeOmniverse</h2>
           <div className="text-zinc-300 leading-relaxed space-y-6 text-[15px]">
             <p>
               CodeOmniverse was created for developers who refuse to waste time searching through scattered tools and hype.
