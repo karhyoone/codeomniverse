@@ -33,23 +33,23 @@ export default function Home() {
   const [showAbout, setShowAbout] = useState(false);
 
   return (
-    <div className="min-h-screen bg-black text-white flex relative">
-      {/* Left Sidebar */}
-      <aside className="w-80 border-r border-zinc-800 bg-zinc-950 flex flex-col h-screen overflow-y-auto">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white flex">
+      {/* Left Sidebar - Professional with subtle color */}
+      <aside className="w-80 border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl flex flex-col h-screen overflow-y-auto">
         <div className="p-6 border-b border-zinc-800">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center text-black font-bold text-2xl">C</div>
-            <h1 className="text-2xl font-semibold">CodeOmniverse</h1>
+            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">C</div>
+            <h1 className="text-2xl font-semibold tracking-tight">CodeOmniverse</h1>
           </div>
 
           <div className="relative">
-            <Search className="absolute left-4 top-3.5 text-zinc-500" size={18} />
+            <Search className="absolute left-4 top-3.5 text-zinc-400" size={18} />
             <input
               type="text"
               placeholder="Search tools..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 rounded-xl pl-11 py-3 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full bg-zinc-900 border border-zinc-700 rounded-xl pl-11 py-3 text-sm focus:outline-none focus:border-blue-500 placeholder-zinc-500"
             />
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function Home() {
             <div key={cat.name}>
               <button
                 onClick={() => setOpenCategory(openCategory === cat.name ? null : cat.name)}
-                className="w-full flex justify-between items-center px-4 py-3 hover:bg-zinc-900 rounded-xl text-left font-medium"
+                className="w-full flex justify-between items-center px-4 py-3 hover:bg-zinc-900 rounded-xl text-left font-medium transition"
               >
                 {cat.name}
                 <ChevronDown size={18} className={`transition ${openCategory === cat.name ? "rotate-180" : ""}`} />
@@ -73,7 +73,7 @@ export default function Home() {
                       href={tool.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block py-2.5 px-4 text-sm text-zinc-300 hover:text-white hover:bg-zinc-900 rounded-xl transition flex justify-between"
+                      className="block py-2.5 px-4 text-sm text-zinc-300 hover:text-blue-400 hover:bg-zinc-900 rounded-xl transition flex justify-between"
                     >
                       {tool.name}
                       <ExternalLink size={15} />
@@ -111,9 +111,9 @@ export default function Home() {
           </a>
         </div>
 
-        {/* Hero / Welcome */}
+        {/* Hero */}
         <div className="max-w-3xl mx-auto text-center mb-20">
-          <h1 className="text-6xl font-bold tracking-tighter mb-6">
+          <h1 className="text-6xl font-bold tracking-tighter mb-6 bg-gradient-to-r from-white via-zinc-300 to-zinc-400 bg-clip-text text-transparent">
             Welcome to CodeOmniverse
           </h1>
           <p className="text-xl text-zinc-400">
@@ -122,21 +122,21 @@ export default function Home() {
         </div>
 
         {/* Center Placeholder */}
-        <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-800 rounded-3xl p-16 text-center">
-          <p className="text-zinc-500">
+        <div className="max-w-4xl mx-auto bg-zinc-900/70 border border-zinc-700 backdrop-blur-xl rounded-3xl p-16 text-center">
+          <p className="text-zinc-400">
             This central area is reserved for future features like AI code generation, live previews, and more.
           </p>
         </div>
       </main>
 
-      {/* About Popup (appears on hover over the button) */}
+      {/* About Popup on Hover */}
       {showAbout && (
         <div 
-          className="fixed bottom-24 left-80 bg-zinc-900 border border-zinc-700 rounded-3xl p-10 max-w-md shadow-2xl z-50"
+          className="fixed bottom-28 left-80 bg-zinc-900 border border-zinc-700 rounded-3xl p-10 max-w-md shadow-2xl z-50 backdrop-blur-xl"
           onMouseEnter={() => setShowAbout(true)}
           onMouseLeave={() => setShowAbout(false)}
         >
-          <h2 className="text-2xl font-semibold mb-6">About CodeOmniverse</h2>
+          <h2 className="text-2xl font-semibold mb-6 text-white">About CodeOmniverse</h2>
           <div className="text-zinc-300 leading-relaxed space-y-6 text-[15px]">
             <p>
               CodeOmniverse was created for developers who refuse to waste time searching through scattered tools and hype.
