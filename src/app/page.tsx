@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, ExternalLink, ChevronDown } from "lucide-react";
+import { Search, ExternalLink, ChevronDown, Info } from "lucide-react";
 
 const categories = [
   {
@@ -30,11 +30,12 @@ const categories = [
 export default function Home() {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showAbout, setShowAbout] = useState(false);
 
   return (
-    <div className="min-h-screen bg-black text-white flex">
+    <div className="min-h-screen bg-black text-white flex relative">
       {/* Left Sidebar */}
-      <aside className="w-80 border-r border-zinc-800 bg-zinc-950 h-screen overflow-y-auto flex flex-col">
+      <aside className="w-80 border-r border-zinc-800 bg-zinc-950 flex flex-col h-screen overflow-y-auto">
         <div className="p-6 border-b border-zinc-800">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center text-black font-bold text-2xl">C</div>
@@ -65,7 +66,7 @@ export default function Home() {
               </button>
 
               {openCategory === cat.name && (
-                <div className="pl-6 mt-2 space-y-1">
+                <div className="pl-6 mt-1 space-y-1">
                   {cat.tools.map((tool) => (
                     <a
                       key={tool.name}
@@ -83,6 +84,18 @@ export default function Home() {
             </div>
           ))}
         </div>
+
+        {/* About Button at Bottom Left */}
+        <div className="p-6 border-t border-zinc-800 mt-auto">
+          <button
+            onMouseEnter={() => setShowAbout(true)}
+            onMouseLeave={() => setShowAbout(false)}
+            className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition w-full px-4 py-3 hover:bg-zinc-900 rounded-xl"
+          >
+            <Info size={18} />
+            About CodeOmniverse
+          </button>
+        </div>
       </aside>
 
       {/* Main Content Area */}
@@ -98,20 +111,33 @@ export default function Home() {
           </a>
         </div>
 
-        {/* Hero */}
+        {/* Hero / Welcome */}
         <div className="max-w-3xl mx-auto text-center mb-20">
           <h1 className="text-6xl font-bold tracking-tighter mb-6">
             Welcome to CodeOmniverse
           </h1>
           <p className="text-xl text-zinc-400">
-            Your curated hub for the most powerful AI tools.
+            Select a tool from the sidebar or explore the About section.
           </p>
         </div>
 
-        {/* About Us Section - Your exact text */}
-        <div className="max-w-3xl mx-auto mb-20">
-          <h2 className="text-3xl font-semibold mb-8">About CodeOmniverse</h2>
-          <div className="prose prose-invert text-zinc-300 leading-relaxed space-y-6">
+        {/* Center Placeholder */}
+        <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-800 rounded-3xl p-16 text-center">
+          <p className="text-zinc-500">
+            This central area is reserved for future features like AI code generation, live previews, and more.
+          </p>
+        </div>
+      </main>
+
+      {/* About Popup (appears on hover over the button) */}
+      {showAbout && (
+        <div 
+          className="fixed bottom-24 left-80 bg-zinc-900 border border-zinc-700 rounded-3xl p-10 max-w-md shadow-2xl z-50"
+          onMouseEnter={() => setShowAbout(true)}
+          onMouseLeave={() => setShowAbout(false)}
+        >
+          <h2 className="text-2xl font-semibold mb-6">About CodeOmniverse</h2>
+          <div className="text-zinc-300 leading-relaxed space-y-6 text-[15px]">
             <p>
               CodeOmniverse was created for developers who refuse to waste time searching through scattered tools and hype.
             </p>
@@ -119,37 +145,29 @@ export default function Home() {
               We cut through the noise and curate only the most powerful, reliable, and impactful AI tools — whether you're writing code, designing interfaces, generating content, or building entire products.
             </p>
             <p>
-              Our mission is simple: <strong>Help developers move faster, build better, and stay ahead</strong> in the rapidly evolving world of AI.
+              Our mission is simple: Help developers move faster, build better, and stay ahead in the rapidly evolving world of AI.
             </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-            <div className="bg-zinc-900 p-6 rounded-2xl">
-              <div className="text-4xl mb-4">🔍</div>
-              <h4 className="font-semibold mb-2">Curated Excellence</h4>
-              <p className="text-sm text-zinc-400">We test and review every tool before adding it. Only the best make the cut.</p>
-            </div>
-            <div className="bg-zinc-900 p-6 rounded-2xl">
-              <div className="text-4xl mb-4">⚡</div>
-              <h4 className="font-semibold mb-2">Built for Speed</h4>
-              <p className="text-sm text-zinc-400">We focus on tools that genuinely save time and boost productivity.</p>
-            </div>
-            <div className="bg-zinc-900 p-6 rounded-2xl">
-              <div className="text-4xl mb-4">🌍</div>
-              <h4 className="font-semibold mb-2">For Real Developers</h4>
-              <p className="text-sm text-zinc-400">Made by developers, for developers who ship products.</p>
+            <div className="pt-6 border-t border-zinc-700 grid grid-cols-1 gap-6">
+              <div>
+                <div className="text-blue-400 text-2xl mb-2">🔍</div>
+                <strong>Curated Excellence</strong>
+                <p className="text-sm text-zinc-400 mt-1">We test and review every tool before adding it. Only the best make the cut.</p>
+              </div>
+              <div>
+                <div className="text-blue-400 text-2xl mb-2">⚡</div>
+                <strong>Built for Speed</strong>
+                <p className="text-sm text-zinc-400 mt-1">We focus on tools that genuinely save time and boost productivity.</p>
+              </div>
+              <div>
+                <div className="text-blue-400 text-2xl mb-2">🌍</div>
+                <strong>For Real Developers</strong>
+                <p className="text-sm text-zinc-400 mt-1">Made by developers, for developers who ship products.</p>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Center Placeholder for Future Code Generation */}
-        <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-800 rounded-3xl p-16 text-center">
-          <h3 className="text-2xl font-semibold mb-4">Code Generation Area</h3>
-          <p className="text-zinc-400">
-            This central space will soon support live AI code generation, previews, and more.
-          </p>
-        </div>
-      </main>
+      )}
     </div>
   );
 }
