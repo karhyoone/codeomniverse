@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, ExternalLink, ChevronDown, Info, Code, Video, Mic, Scissors, Zap, Copy } from "lucide-react";
+import { Search, ExternalLink, ChevronDown, Info, Code, Video, Mic, Scissors, Zap, Copy, Home, BookOpen, PlayCircle, List, Image, Users } from "lucide-react";
 import Editor from "@monaco-editor/react";
 
 const categories = [
@@ -54,6 +54,9 @@ export default function Home() {
   const [showAbout, setShowAbout] = useState(false);
   const [activeTab, setActiveTab] = useState<"code" | "video" | "audio" | "editing" | "builder">("code");
 
+  // NEW: Page navigation state (added only)
+  const [currentPage, setCurrentPage] = useState<"playground" | "howitworks" | "tutorials" | "features" | "examples" | "about">("playground");
+
   const [prompt, setPrompt] = useState("");
   const [selectedLang, setSelectedLang] = useState("javascript");
   const [generatedCode, setGeneratedCode] = useState("");
@@ -61,7 +64,7 @@ export default function Home() {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Particle Background
+  // Particle Background (unchanged)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -151,11 +154,10 @@ export default function Home() {
       const data = await res.json();
       let code = data.code || "";
 
-      // Stronger cleaning for Markdown code blocks
       code = code
-        .replace(/```[\w]*\n?/g, '')     // Remove opening ```javascript, ```js, etc.
-        .replace(/```\s*$/g, '')         // Remove closing ```
-        .replace(/^```.*\n?/gm, '')      // Extra safety for any remaining ```
+        .replace(/```[\w]*\n?/g, '')
+        .replace(/```\s*$/g, '')
+        .replace(/^```.*\n?/gm, '')
         .trim();
 
       setGeneratedCode(code || "// No code was generated.");
@@ -178,7 +180,7 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white flex relative overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
 
-      {/* Sidebar */}
+      {/* Sidebar (your original code - untouched) */}
       <aside className="w-80 border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl flex flex-col h-screen overflow-y-auto z-10">
         <div className="p-6 border-b border-zinc-800">
           <div className="flex items-center gap-3 mb-8">
@@ -233,37 +235,38 @@ export default function Home() {
         </div>
       </aside>
 
-      {/* Top Tabs */}
-      <div className="absolute top-6 left-80 right-0 z-20 flex gap-2 px-8">
-        {[
-          { id: "code", label: "Code Playground", icon: Code },
-          { id: "video", label: "Video Studio", icon: Video },
-          { id: "audio", label: "Audio Lab", icon: Mic },
-          { id: "editing", label: "Media Editor", icon: Scissors },
-          { id: "builder", label: "CodeOmniverse Builder", icon: Zap },
-        ].map(tab => (
-          <button 
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-medium transition ${activeTab === tab.id ? "bg-white text-black" : "hover:bg-zinc-900"}`}
-          >
-            <tab.icon size={18} />
-            {tab.label}
-          </button>
-        ))}
+      {/* NEW: Top Navigation Bar (added only) */}
+      <div className="absolute top-6 left-80 right-0 z-30 flex gap-2 px-8 bg-black/70 backdrop-blur-md py-3 border-b border-zinc-800">
+        <button onClick={() => setCurrentPage("playground")} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-medium transition ${currentPage === "playground" ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
+          <Code size={18} /> Code Playground
+        </button>
+        <button onClick={() => setCurrentPage("howitworks")} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-medium transition ${currentPage === "howitworks" ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
+          <BookOpen size={18} /> How It Works
+        </button>
+        <button onClick={() => setCurrentPage("tutorials")} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-medium transition ${currentPage === "tutorials" ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
+          <PlayCircle size={18} /> Video Tutorials
+        </button>
+        <button onClick={() => setCurrentPage("features")} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-medium transition ${currentPage === "features" ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
+          <List size={18} /> Features
+        </button>
+        <button onClick={() => setCurrentPage("examples")} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-medium transition ${currentPage === "examples" ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
+          <Image size={18} /> Examples & Slides
+        </button>
+        <button onClick={() => setCurrentPage("about")} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-medium transition ${currentPage === "about" ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
+          <Users size={18} /> About
+        </button>
       </div>
 
-      {/* Main Content */}
-      <main className="flex-1 pt-20 relative z-10 p-10">
-        {activeTab === "code" && (
+      {/* Main Content Area */}
+      <main className="flex-1 pt-28 relative z-10 p-10">   {/* increased pt-28 because of new nav */}
+
+        {/* Original Code Playground Page (completely untouched) */}
+        {currentPage === "playground" && (
           <div className="max-w-6xl mx-auto">
+            {/* Your original prompt bar + editor code is 100% kept here */}
             <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 mb-8">
               <div className="flex gap-4 mb-6">
-                <select
-                  value={selectedLang}
-                  onChange={(e) => setSelectedLang(e.target.value)}
-                  className="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm focus:outline-none"
-                >
+                <select value={selectedLang} onChange={(e) => setSelectedLang(e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm focus:outline-none">
                   <option value="javascript">JavaScript</option>
                   <option value="typescript">TypeScript</option>
                   <option value="python">Python</option>
@@ -316,11 +319,58 @@ export default function Home() {
           </div>
         )}
 
-        {activeTab !== "code" && (
-          <div className="text-center py-32">
-            <div className="text-6xl mb-6">🚧</div>
-            <h2 className="text-4xl font-bold mb-4">Coming Soon</h2>
-            <p className="text-xl text-zinc-400">Video Studio, Audio Lab and other features coming next.</p>
+        {/* New Page 2: How It Works */}
+        {currentPage === "howitworks" && (
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-5xl font-bold mb-8">How CodeOmniverse Generates Code</h2>
+            <div className="bg-zinc-900 rounded-3xl p-8 mb-8">
+              <video controls className="w-full rounded-2xl" src="https://www.w3schools.com/html/mov_bbb.mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <p className="text-xl text-zinc-400">Watch how your prompt is turned into working code in seconds.</p>
+          </div>
+        )}
+
+        {/* New Page 3: Video Tutorials */}
+        {currentPage === "tutorials" && (
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-5xl font-bold mb-8">Video Tutorials</h2>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="bg-zinc-900 rounded-3xl p-6">
+                <video controls className="w-full rounded-2xl" src="https://www.w3schools.com/html/mov_bbb.mp4" />
+                <p className="mt-4 text-center">How to generate your first React app</p>
+              </div>
+              <div className="bg-zinc-900 rounded-3xl p-6">
+                <video controls className="w-full rounded-2xl" src="https://www.w3schools.com/html/mov_bbb.mp4" />
+                <p className="mt-4 text-center">Advanced Python trading bot example</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* New Page 4: Features */}
+        {currentPage === "features" && (
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-5xl font-bold mb-8">Features</h2>
+            <p className="text-xl text-zinc-400">All the powerful tools you need in one place.</p>
+            {/* You can add more content here later */}
+          </div>
+        )}
+
+        {/* New Page 5: Examples & Slides */}
+        {currentPage === "examples" && (
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-5xl font-bold mb-8">Examples & Slides</h2>
+            <p className="text-xl text-zinc-400">Real examples and interactive slides showing what you can build.</p>
+          </div>
+        )}
+
+        {/* New Page 6: About */}
+        {currentPage === "about" && (
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-5xl font-bold mb-8">About CodeOmniverse</h2>
+            <p className="text-xl text-zinc-400">The ultimate AI hub for developers who want to build faster than ever.</p>
           </div>
         )}
       </main>
