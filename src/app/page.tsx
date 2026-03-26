@@ -58,10 +58,8 @@ export default function Home() {
   const [selectedLang, setSelectedLang] = useState("javascript");
   const [generatedCode, setGeneratedCode] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [lineExplanation, setLineExplanation] = useState("");
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const editorRef = useRef<any>(null);
 
   // Particle Background
   useEffect(() => {
@@ -132,13 +130,11 @@ export default function Home() {
     };
   }, []);
 
-  // Fast Streaming Generation
   const handleGenerateCode = async () => {
     if (!prompt.trim()) return;
 
     setIsGenerating(true);
     setGeneratedCode("");
-    setLineExplanation("");
 
     try {
       const res = await fetch("/api/generate", {
@@ -147,18 +143,8 @@ export default function Home() {
         body: JSON.stringify({ prompt, language: selectedLang }),
       });
 
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader!.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        setGeneratedCode((prev) => prev + buffer);
-        buffer = "";
-      }
+      const data = await res.json();
+      setGeneratedCode(data.code || "// No code returned");
     } catch (error) {
       setGeneratedCode("// Error generating code. Please try again.");
     } finally {
@@ -173,40 +159,11 @@ export default function Home() {
     }
   };
 
-  // AI Hover Explanation
-  const handleEditorDidMount = (editor: any) => {
-    editorRef.current = editor;
-
-    editor.onMouseMove((e: any) => {
-      const position = e.target.position;
-      if (!position || !generatedCode) return;
-
-      const lineNumber = position.lineNumber;
-      const lines = generatedCode.split("\n");
-      const lineContent = lines[lineNumber - 1];
-
-      if (lineContent && lineContent.trim()) {
-        fetch("/api/explain", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            language: selectedLang,
-            line: lineContent.trim(),
-            context: generatedCode.substring(0, 800),
-          }),
-        })
-          .then(r => r.json())
-          .then(data => setLineExplanation(data.explanation || "No explanation available"))
-          .catch(() => setLineExplanation("Could not fetch explanation at the moment."));
-      }
-    });
-  };
-
   return (
     <div className="min-h-screen bg-black text-white flex relative overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
 
-      {/* Sidebar - Changed to CodeOmniverse */}
+      {/* Sidebar */}
       <aside className="w-80 border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl flex flex-col h-screen overflow-y-auto z-10">
         <div className="p-6 border-b border-zinc-800">
           <div className="flex items-center gap-3 mb-8">
@@ -330,24 +287,16 @@ export default function Home() {
                   height="680px"
                   language={selectedLang === "html" ? "html" : selectedLang}
                   value={generatedCode}
-                  theme="vs-dark"
-                  onMount={handleEditorDidMount}
+                  theme="vs-dark"                    // Good VS Code-like dark theme
                   options={{
                     minimap: { enabled: false },
                     fontSize: 15,
                     wordWrap: "on",
                     lineNumbers: "on",
                     automaticLayout: true,
+                    scrollBeyondLastLine: false,
                   }}
                 />
-              </div>
-            )}
-
-            {/* AI Hover Explanation */}
-            {lineExplanation && (
-              <div className="mt-6 bg-zinc-900 border border-violet-500/30 rounded-2xl p-6 text-sm leading-relaxed">
-                <div className="text-violet-400 font-medium mb-2">AI Line Explanation</div>
-                {lineExplanation}
               </div>
             )}
           </div>
