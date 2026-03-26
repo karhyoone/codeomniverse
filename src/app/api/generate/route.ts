@@ -1,90 +1,55 @@
-import { NextResponse } from "next/server";
-import Replicate from "replicate";
+// src/app/api/generate/route.ts
+import { NextRequest, NextResponse } from "next/server";
 
-const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN,
-});
-
-export async function POST(req: Request) {
-  const { prompt, type, language } = await req.json();
-
+export async function POST(request: NextRequest) {
   try {
-    if (type === "video") {
-      // Using Luma Dream Machine for video generation
-      const output = await replicate.run("luma/dream-machine", { input: { prompt } });
-      return NextResponse.json({ output });
+    const { prompt, language } = await request.json();
+
+    if (!prompt || !language) {
+      return NextResponse.json({ error: "Missing prompt or language" }, { status: 400 });
     }
 
-    if (type === "audio") {
-      // Using ElevenLabs or similar via Replicate
-      const output = await replicate.run("elevenlabs/elevenlabs-tts", { 
-        input: { text: prompt, voice_id: "pMs2gSgnL95rRDf8St6p" } 
-      });
-      return NextResponse.json({ output });
+    const apiKey = process.env.GROK_API_KEY;
+
+    if (!apiKey) {
+      return NextResponse.json({ 
+        error: "GROK_API_KEY is not configured. Please add it in Vercel Environment Variables." 
+      }, { status: 500 });
     }
 
-    // Default: Code Generation (Using your existing GROK/OpenAI logic)
-    const res = await fetch("https://api.x.ai", {
+    const response = await fetch("https://api.x.ai/v1/chat/completions", {
       method: "POST",
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROK_API_KEY}`
+        "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "grok-beta",
-        messages: [{ role: "user", content: `Write ${language} code for: ${prompt}. Return ONLY the code.` }]
+        model: "grok-4",
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert programmer. Generate clean, well-commented code in ${language}. Return ONLY the code, no explanations, no markdown.`,
+          },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.7,
+        max_tokens: 4000,
       }),
     });
-    
-    const aiData = await res.json();
-    return NextResponse.json({ output: aiData.choices[0].message.content });
 
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
-import { NextResponse } from "next/server";
-import Replicate from "replicate";
-
-const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN,
-});
-
-export async function POST(req: Request) {
-  const { prompt, type, language } = await req.json();
-
-  try {
-    if (type === "video") {
-      // Using Luma Dream Machine for video generation
-      const output = await replicate.run("luma/dream-machine", { input: { prompt } });
-      return NextResponse.json({ output });
+    if (!response.ok) {
+      throw new Error(`API returned status ${response.status}`);
     }
 
-    if (type === "audio") {
-      // Using ElevenLabs or similar via Replicate
-      const output = await replicate.run("elevenlabs/elevenlabs-tts", { 
-        input: { text: prompt, voice_id: "pMs2gSgnL95rRDf8St6p" } 
-      });
-      return NextResponse.json({ output });
-    }
+    const data = await response.json();
+    const code = data.choices?.[0]?.message?.content || "// No code was generated.";
 
-    // Default: Code Generation (Using your existing GROK/OpenAI logic)
-    const res = await fetch("https://api.x.ai", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROK_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "grok-beta",
-        messages: [{ role: "user", content: `Write ${language} code for: ${prompt}. Return ONLY the code.` }]
-      }),
-    });
-    
-    const aiData = await res.json();
-    return NextResponse.json({ output: aiData.choices[0].message.content });
+    return NextResponse.json({ code });
 
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("API Error:", error);
+    return NextResponse.json({ 
+      error: error.message || "Failed to generate code" 
+    }, { status: 500 });
   }
 }
