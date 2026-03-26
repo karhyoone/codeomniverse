@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, ExternalLink, ChevronDown, Info, Code, Video, Mic, Scissors, Zap, Copy, Home as HomeIcon, BookOpen, PlayCircle, List, Image, Users } from "lucide-react";
+import { Search, ExternalLink, ChevronDown, Info, Code, Video, Mic, Scissors, Zap, Copy, BookOpen, PlayCircle, List, Image, Users } from "lucide-react";
 import Editor from "@monaco-editor/react";
 
 const categories = [
@@ -48,24 +48,23 @@ const categories = [
   },
 ];
 
-// ==================== YOUR ORIGINAL CODE STARTS HERE ====================
 export default function Home() {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAbout, setShowAbout] = useState(false);
   const [activeTab, setActiveTab] = useState<"code" | "video" | "audio" | "editing" | "builder">("code");
 
+  // Added for multi-page support
+  const [currentPage, setCurrentPage] = useState<"playground" | "howitworks" | "tutorials" | "features" | "examples" | "about">("playground");
+
   const [prompt, setPrompt] = useState("");
   const [selectedLang, setSelectedLang] = useState("javascript");
   const [generatedCode, setGeneratedCode] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // NEW: Added for multi-page support
-  const [currentPage, setCurrentPage] = useState<"playground" | "howitworks" | "tutorials" | "features" | "examples" | "about">("playground");
-
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Particle Background
+  // Particle Background (your original code - untouched)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -236,7 +235,7 @@ export default function Home() {
         </div>
       </aside>
 
-      {/* Top Navigation - Added for 6 pages */}
+      {/* Added: Top Navigation Bar for 6 Pages */}
       <div className="absolute top-6 left-80 right-0 z-30 flex gap-2 px-8 bg-black/80 backdrop-blur-md py-3 border-b border-zinc-800">
         <button onClick={() => setCurrentPage("playground")} className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-medium transition ${currentPage === "playground" ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
           <Code size={18} /> Code Playground
@@ -261,7 +260,7 @@ export default function Home() {
       {/* Main Content */}
       <main className="flex-1 pt-28 relative z-10 p-10">
 
-        {/* === YOUR ORIGINAL CODE PLAYGROUND (untouched) === */}
+        {/* Your Original Code Playground - completely untouched */}
         {currentPage === "playground" && (
           <div className="max-w-6xl mx-auto">
             <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 mb-8">
@@ -323,16 +322,16 @@ export default function Home() {
           </div>
         )}
 
-        {/* === NEW PAGES (added only) === */}
+        {/* New Pages - Added only, nothing from your original code was removed */}
         {currentPage === "howitworks" && (
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-5xl font-bold mb-8">How CodeOmniverse Works</h2>
-            <div className="bg-zinc-900 rounded-3xl p-8">
+            <div className="bg-zinc-900 rounded-3xl p-8 mb-8">
               <video controls className="w-full rounded-2xl" src="https://www.w3schools.com/html/mov_bbb.mp4">
                 Your browser does not support the video tag.
               </video>
             </div>
-            <p className="mt-6 text-xl text-zinc-400">Watch a step-by-step video on how we generate code instantly.</p>
+            <p className="text-xl text-zinc-400">Watch how your prompt turns into working code step by step.</p>
           </div>
         )}
 
@@ -342,11 +341,11 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-zinc-900 rounded-3xl p-6">
                 <video controls className="w-full rounded-2xl" src="https://www.w3schools.com/html/mov_bbb.mp4" />
-                <p className="mt-4 text-center">Building your first React app with AI</p>
+                <p className="mt-4 text-center">How to generate your first React app</p>
               </div>
               <div className="bg-zinc-900 rounded-3xl p-6">
                 <video controls className="w-full rounded-2xl" src="https://www.w3schools.com/html/mov_bbb.mp4" />
-                <p className="mt-4 text-center">Creating a Python Trading Bot</p>
+                <p className="mt-4 text-center">Creating a Python Trading Bot with AI</p>
               </div>
             </div>
           </div>
@@ -355,21 +354,21 @@ export default function Home() {
         {currentPage === "features" && (
           <div className="max-w-4xl mx-auto">
             <h2 className="text-5xl font-bold mb-8">Powerful Features</h2>
-            <p className="text-xl text-zinc-400">Everything you need to build faster with AI.</p>
+            <p className="text-xl text-zinc-400">Everything you need to build faster with AI in one place.</p>
           </div>
         )}
 
         {currentPage === "examples" && (
           <div className="max-w-4xl mx-auto">
             <h2 className="text-5xl font-bold mb-8">Examples & Slides</h2>
-            <p className="text-xl text-zinc-400">Real examples and interactive slides of what you can create.</p>
+            <p className="text-xl text-zinc-400">Real examples and interactive slides showing what you can build.</p>
           </div>
         )}
 
         {currentPage === "about" && (
           <div className="max-w-4xl mx-auto">
             <h2 className="text-5xl font-bold mb-8">About CodeOmniverse</h2>
-            <p className="text-xl text-zinc-400">The ultimate AI-powered development hub.</p>
+            <p className="text-xl text-zinc-400">The ultimate AI hub where developers generate code, videos, audio, and more — all in one place.</p>
           </div>
         )}
       </main>
