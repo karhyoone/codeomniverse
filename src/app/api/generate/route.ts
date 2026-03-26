@@ -1,27 +1,55 @@
-const handleGenerateCode = async () => {
-  if (!prompt.trim()) return;
+// src/app/api/generate/route.ts
+import { NextRequest, NextResponse } from "next/server";
 
-  setIsGenerating(true);
-  setGeneratedCode("Generating...");
-
+export async function POST(request: NextRequest) {
   try {
-    const res = await fetch("/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, language: selectedLang }),
-    });
+    const { prompt, language } = await request.json();
 
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+    if (!prompt || !language) {
+      return NextResponse.json({ error: "Missing prompt or language" }, { status: 400 });
     }
 
-    const data = await res.json();
-    setGeneratedCode(data.code || "// No code was returned from the API.");
+    const apiKey = process.env.GROK_API_KEY;
+
+    if (!apiKey) {
+      return NextResponse.json({ 
+        error: "GROK_API_KEY is not configured. Please add it in Vercel Environment Variables." 
+      }, { status: 500 });
+    }
+
+    const response = await fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "grok-4",
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert programmer. Generate clean, well-commented code in ${language}. Return ONLY the code, no explanations, no markdown.`,
+          },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.7,
+        max_tokens: 4000,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API returned status ${response.status}`);
+    }
+
+    const data = await response.json();
+    const code = data.choices?.[0]?.message?.content || "// No code was generated.";
+
+    return NextResponse.json({ code });
+
   } catch (error: any) {
-    console.error("Generation error:", error);
-    setGeneratedCode(`// Error: ${error.message || "Failed to connect to AI. Please check your API key in Vercel."}`);
-  } finally {
-    setIsGenerating(false);
+    console.error("API Error:", error);
+    return NextResponse.json({ 
+      error: error.message || "Failed to generate code" 
+    }, { status: 500 });
   }
-};
+}
