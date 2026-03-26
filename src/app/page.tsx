@@ -130,11 +130,12 @@ export default function Home() {
     };
   }, []);
 
+  // Fixed Generate Code with Markdown cleaning
   const handleGenerateCode = async () => {
     if (!prompt.trim()) return;
 
     setIsGenerating(true);
-    setGeneratedCode("");
+    setGeneratedCode("Generating...");
 
     try {
       const res = await fetch("/api/generate", {
@@ -143,10 +144,23 @@ export default function Home() {
         body: JSON.stringify({ prompt, language: selectedLang }),
       });
 
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
+
       const data = await res.json();
-      setGeneratedCode(data.code || "// No code returned");
-    } catch (error) {
-      setGeneratedCode("// Error generating code. Please try again.");
+      let code = data.code || "";
+
+      // Clean Markdown code blocks (this fixes the "all red" problem)
+      code = code
+        .replace(/```[\w]*\n?/g, '')   // Remove opening ```javascript
+        .replace(/```$/g, '')          // Remove closing ```
+        .trim();
+
+      setGeneratedCode(code || "// No code was generated.");
+    } catch (error: any) {
+      console.error("Generation error:", error);
+      setGeneratedCode(`// Error: ${error.message || "Failed to generate code. Please check your GROK_API_KEY in Vercel."}`);
     } finally {
       setIsGenerating(false);
     }
@@ -287,14 +301,13 @@ export default function Home() {
                   height="680px"
                   language={selectedLang === "html" ? "html" : selectedLang}
                   value={generatedCode}
-                  theme="vs-dark"                    // Good VS Code-like dark theme
+                  theme="vs-dark"
                   options={{
                     minimap: { enabled: false },
                     fontSize: 15,
                     wordWrap: "on",
                     lineNumbers: "on",
                     automaticLayout: true,
-                    scrollBeyondLastLine: false,
                   }}
                 />
               </div>
