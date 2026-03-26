@@ -130,7 +130,7 @@ export default function Home() {
     };
   }, []);
 
-  // Fixed Generate Code with Markdown cleaning
+  // Improved Generate Code with stronger Markdown cleaning
   const handleGenerateCode = async () => {
     if (!prompt.trim()) return;
 
@@ -151,10 +151,11 @@ export default function Home() {
       const data = await res.json();
       let code = data.code || "";
 
-      // Clean Markdown code blocks (this fixes the "all red" problem)
+      // Stronger cleaning for Markdown code blocks
       code = code
-        .replace(/```[\w]*\n?/g, '')   // Remove opening ```javascript
-        .replace(/```$/g, '')          // Remove closing ```
+        .replace(/```[\w]*\n?/g, '')     // Remove opening ```javascript, ```js, etc.
+        .replace(/```\s*$/g, '')         // Remove closing ```
+        .replace(/^```.*\n?/gm, '')      // Extra safety for any remaining ```
         .trim();
 
       setGeneratedCode(code || "// No code was generated.");
