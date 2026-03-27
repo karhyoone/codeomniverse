@@ -1,26 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, ChevronDown, Info, Code, Copy } from "lucide-react";
+import { Search, Info, Code, Copy } from "lucide-react";
 import Editor from "@monaco-editor/react";
 
-const categories = [
-  {
-    name: "AI Code & Dev Tools (2026)",
-  },
-  {
-    name: "Video Generation & Editing",
-  },
-  {
-    name: "Audio & Voice Tools",
-  },
-  {
-    name: "Text-to-Media & Assistants",
-  },
-];
-
 export default function Home() {
-  const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAbout, setShowAbout] = useState(false);
 
@@ -141,7 +125,7 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white flex relative overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
 
-      {/* Clean Sidebar - No links */}
+      {/* Minimal Sidebar - No categories, no links */}
       <aside className="w-80 border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl flex flex-col h-screen overflow-y-auto z-10">
         <div className="p-6 border-b border-zinc-800">
           <div className="flex items-center gap-3 mb-8">
@@ -152,7 +136,7 @@ export default function Home() {
             <Search className="absolute left-4 top-3.5 text-zinc-400" size={18} />
             <input
               type="text"
-              placeholder="Search tools..."
+              placeholder="Search..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl pl-11 py-3 text-sm focus:outline-none focus:border-violet-500"
@@ -160,18 +144,8 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex-1 p-4 space-y-2">
-          {categories.map(cat => (
-            <div key={cat.name}>
-              <button 
-                onClick={() => setOpenCategory(openCategory === cat.name ? null : cat.name)}
-                className="w-full flex justify-between items-center px-4 py-3 hover:bg-zinc-900 rounded-2xl text-left font-medium"
-              >
-                {cat.name}
-                <ChevronDown size={18} className={`transition ${openCategory === cat.name ? "rotate-180" : ""}`} />
-              </button>
-            </div>
-          ))}
+        <div className="flex-1 p-6">
+          {/* Empty space - no categories or links */}
         </div>
 
         <div className="p-6 border-t border-zinc-800 mt-auto">
