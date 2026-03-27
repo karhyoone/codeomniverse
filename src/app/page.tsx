@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, ExternalLink, ChevronDown, Info, Code, Video, Mic, Scissors, Zap, Copy, BookOpen, PlayCircle, List, Image, Users } from "lucide-react";
+import { Search, ExternalLink, ChevronDown, Info, Code, Video, Mic, Scissors, Zap, Copy, BookOpen, PlayCircle, List, Image as ImageIcon, Users } from "lucide-react";
 import Editor from "@monaco-editor/react";
 
 const categories = [
@@ -57,7 +57,7 @@ export default function Home() {
   // Original page navigation
   const [currentPage, setCurrentPage] = useState<"playground" | "howitworks" | "tutorials" | "features" | "examples" | "about">("playground");
 
-  // Studio tabs (Code / Audio / Text / Grok Imagine)
+  // Studio tabs
   const [currentSection, setCurrentSection] = useState<"code" | "audio" | "text" | "imagine">("code");
 
   const [prompt, setPrompt] = useState("");
@@ -74,7 +74,7 @@ export default function Home() {
   const [textContent, setTextContent] = useState("Start writing here... Try the AI Improve button below.");
   const [isGeneratingText, setIsGeneratingText] = useState(false);
 
-  // Grok Imagine (Image Generation) states
+  // Image Studio (Flux.2) states
   const [imaginePrompt, setImaginePrompt] = useState("");
   const [generatedImageUrl, setGeneratedImageUrl] = useState("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -187,7 +187,7 @@ export default function Home() {
     }
   };
 
-  // Audio Generation (placeholder)
+  // Audio Generation
   const handleGenerateAudio = async () => {
     if (!audioPrompt.trim()) return;
     setIsGeneratingAudio(true);
@@ -215,8 +215,8 @@ export default function Home() {
     }
   };
 
-  // Grok Imagine Image Generation (Text-to-Image)
-  const handleGenerateImagineImage = async () => {
+  // Image Studio (Flux.2)
+  const handleGenerateImage = async () => {
     if (!imaginePrompt.trim()) return;
 
     setIsGeneratingImage(true);
@@ -239,8 +239,8 @@ export default function Home() {
 
       setGeneratedImageUrl(data.imageUrl);
     } catch (error: any) {
-      console.error("Grok Imagine error:", error);
-      alert(`Grok Imagine failed: ${error.message}`);
+      console.error("Image generation error:", error);
+      alert(`Image generation failed: ${error.message}`);
     } finally {
       setIsGeneratingImage(false);
     }
@@ -250,7 +250,7 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white flex relative overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
 
-      {/* Your original Sidebar - untouched */}
+      {/* Sidebar - your original code (now properly closed) */}
       <aside className="w-80 border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl flex flex-col h-screen overflow-y-auto z-10">
         <div className="p-6 border-b border-zinc-800">
           <div className="flex items-center gap-3 mb-8">
@@ -305,7 +305,7 @@ export default function Home() {
         </div>
       </aside>
 
-      {/* Top Tabs - Now includes Grok Imagine for Images */}
+      {/* Top Tabs */}
       <div className="absolute top-6 left-80 right-0 z-30 flex gap-3 px-8 bg-black/80 backdrop-blur-md py-4 border-b border-zinc-800">
         <button onClick={() => setCurrentSection("code")} className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-medium transition ${currentSection === "code" ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
           <Code size={18} /> Code Playground
@@ -317,7 +317,7 @@ export default function Home() {
           <List size={18} /> Text Editor
         </button>
         <button onClick={() => setCurrentSection("imagine")} className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-medium transition ${currentSection === "imagine" ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
-          <Image size={18} /> Grok Imagine (Text-to-Image)
+          <ImageIcon size={18} /> Image Studio
         </button>
       </div>
 
@@ -434,26 +434,26 @@ export default function Home() {
           </div>
         )}
 
-        {/* Grok Imagine - Image Generation (Text-to-Image) */}
+        {/* Image Studio - Flux.2 */}
         {currentSection === "imagine" && (
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-5xl font-bold mb-4">Grok Imagine Studio</h2>
-            <p className="text-xl text-zinc-400 mb-8">Describe any image you want to generate. Example: "a majestic dog running in a sunny park at sunset, cinematic lighting, highly detailed"</p>
+            <h2 className="text-5xl font-bold mb-4">Image Studio</h2>
+            <p className="text-xl text-zinc-400 mb-8">Describe any image you want to generate. Example: "a majestic golden retriever running through a sunny park at golden hour, cinematic lighting, highly detailed"</p>
             
             <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8">
               <input
                 type="text"
                 value={imaginePrompt}
                 onChange={(e) => setImaginePrompt(e.target.value)}
-                placeholder="A majestic dog running in a sunny park at sunset..."
+                placeholder="A majestic golden retriever running through a sunny park at golden hour..."
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg mb-6 focus:outline-none focus:border-violet-500"
               />
               <button
-                onClick={handleGenerateImagineImage}
+                onClick={handleGenerateImage}
                 disabled={isGeneratingImage || !imaginePrompt.trim()}
                 className="bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 px-8 py-4 rounded-2xl font-medium w-full text-lg"
               >
-                {isGeneratingImage ? "Generating Image with Grok Imagine..." : "Generate Image with Grok Imagine"}
+                {isGeneratingImage ? "Generating Image with Flux.2..." : "Generate Image"}
               </button>
             </div>
 
@@ -461,16 +461,17 @@ export default function Home() {
               <div className="mt-10 bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden p-6">
                 <img 
                   src={generatedImageUrl} 
-                  alt="Grok Imagine generated image" 
+                  alt="Generated image" 
                   className="w-full rounded-2xl shadow-2xl" 
                 />
                 <div className="mt-4 text-center">
-                  <button 
-                    onClick={() => window.open(generatedImageUrl, '_blank')}
+                  <a 
+                    href={generatedImageUrl} 
+                    download 
                     className="text-violet-400 hover:text-violet-300 underline"
                   >
                     Download Image
-                  </button>
+                  </a>
                 </div>
               </div>
             )}
