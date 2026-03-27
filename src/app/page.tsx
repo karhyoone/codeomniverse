@@ -1,41 +1,21 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, ExternalLink, ChevronDown, Info, Code, Copy } from "lucide-react";
+import { Search, ChevronDown, Info, Code, Copy } from "lucide-react";
 import Editor from "@monaco-editor/react";
 
 const categories = [
   {
     name: "AI Code & Dev Tools (2026)",
-    tools: [
-      { name: "Claude Code", link: "https://claude.ai", desc: "Best agentic coding 2026" },
-      { name: "Cursor", link: "https://cursor.com", desc: "AI-first IDE" },
-      { name: "GitHub Copilot", link: "https://github.com/features/copilot", desc: "VS Code powerhouse" },
-      { name: "Grok 4", link: "https://grok.x.ai", desc: "xAI coding beast" },
-      { name: "Codex", link: "https://openai.com", desc: "OpenAI code agent" },
-      { name: "Windsurf", link: "https://windsurf.ai", desc: "Next-gen coding" },
-    ],
   },
   {
     name: "Video Generation & Editing",
-    tools: [
-      { name: "Google Veo 3.1", link: "https://google.com/veo", desc: "Best overall text-to-video" },
-      { name: "Runway Gen-4.5", link: "https://runwayml.com", desc: "Cinematic control" },
-      { name: "OpenAI Sora 2", link: "https://openai.com/sora", desc: "Storytelling videos" },
-      { name: "Kling 3", link: "https://kling.ai", desc: "High-action realism" },
-      { name: "HeyGen", link: "https://heygen.com", desc: "AI avatars & talking heads" },
-      { name: "Vizard.ai", link: "https://vizard.ai", desc: "Long-to-short editing" },
-    ],
   },
   {
     name: "Audio & Voice Tools",
-    tools: [
-      { name: "ElevenLabs", link: "https://elevenlabs.io", desc: "Most realistic voice 2026" },
-      { name: "Murf AI", link: "https://murf.ai", desc: "Studio voiceovers" },
-      { name: "Play.ht", link: "https://play.ht", desc: "Multilingual TTS" },
-      { name: "WellSaid Labs", link: "https://wellsaid.com", desc: "Enterprise voices" },
-      { name: "Resemble AI", link: "https://resemble.ai", desc: "Voice cloning" },
-    ],
+  },
+  {
+    name: "Text-to-Media & Assistants",
   },
 ];
 
@@ -120,7 +100,7 @@ export default function Home() {
     };
   }, []);
 
-  // Your original Code Generation (untouched)
+  // Code Generation
   const handleGenerateCode = async () => {
     if (!prompt.trim()) return;
     setIsGenerating(true);
@@ -161,7 +141,7 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white flex relative overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
 
-      {/* Sidebar - your original (cleaned) */}
+      {/* Clean Sidebar - No links */}
       <aside className="w-80 border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl flex flex-col h-screen overflow-y-auto z-10">
         <div className="p-6 border-b border-zinc-800">
           <div className="flex items-center gap-3 mb-8">
@@ -172,7 +152,7 @@ export default function Home() {
             <Search className="absolute left-4 top-3.5 text-zinc-400" size={18} />
             <input
               type="text"
-              placeholder="Search any AI tool..."
+              placeholder="Search tools..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full bg-zinc-900 border border-zinc-700 rounded-2xl pl-11 py-3 text-sm focus:outline-none focus:border-violet-500"
@@ -190,17 +170,6 @@ export default function Home() {
                 {cat.name}
                 <ChevronDown size={18} className={`transition ${openCategory === cat.name ? "rotate-180" : ""}`} />
               </button>
-              {openCategory === cat.name && (
-                <div className="pl-6 mt-1 space-y-1">
-                  {cat.tools.map(tool => (
-                    <a key={tool.name} href={tool.link} target="_blank" rel="noopener noreferrer"
-                      className="block py-2.5 px-4 text-sm text-zinc-300 hover:text-violet-400 hover:bg-zinc-900 rounded-2xl transition flex justify-between items-center">
-                      {tool.name}
-                      <ExternalLink size={15} />
-                    </a>
-                  ))}
-                </div>
-              )}
             </div>
           ))}
         </div>
@@ -221,7 +190,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-6xl font-bold tracking-tighter mb-4">CodeOmniverse</h1>
-            <p className="text-2xl text-zinc-400">Generate clean code in any language instantly</p>
+            <p className="text-2xl text-zinc-400">Generate clean, working code instantly</p>
           </div>
 
           <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 mb-8">
