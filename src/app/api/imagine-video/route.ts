@@ -4,41 +4,72 @@ export async function POST(request: NextRequest) {
   try {
     const { prompt } = await request.json();
 
-    if (!prompt) {
-      return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
+    if (!prompt || typeof prompt !== 'string') {
+      return NextResponse.json({ error: "Valid prompt is required" }, { status: 400 });
     }
 
     const apiKey = process.env.GROK_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: "GROK_API_KEY not configured" }, { status: 500 });
+      return NextResponse.json({ error: "GROK_API_KEY is not set in Vercel environment variables" }, { status: 500 });
     }
 
-    const response = await fetch("https://api.x.ai/v1/images/generations", {  // Grok Imagine video endpoint (adjust if exact path changes)
+    // Submit the generation request (async)
+    const submitRes = await fetch("https://api.x.ai/v1/video/generate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "grok-imagine-video",   // or "grok-imagine-image" if video not directly available
+        model: "grok-imagine-video",
         prompt: prompt,
-        // You can add more params like duration, style later
+        duration: 8,           // seconds (adjust as needed)
+        aspect_ratio: "16:9",
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      return NextResponse.json({ error: `API error: ${response.status} - ${errorText}` }, { status: response.status });
+    if (!submitRes.ok) {
+      const errorText = await submitRes.text();
+      return NextResponse.json({ error: `Submit failed: ${submitRes.status} - ${errorText}` }, { status: submitRes.status });
     }
 
-    const data = await response.json();
-    // Adjust according to actual response format (usually data.video_url or data.url)
-    const videoUrl = data.video_url || data.url || data.output?.[0]?.url;
+    const submitData = await submitRes.json();
+    const requestId = submitData.request_id;
 
-    return NextResponse.json({ videoUrl });
+    if (!requestId) {
+      return NextResponse.json({ error: "No request_id received from API" }, { status: 500 });
+    }
+
+    // Poll for completion (simple polling - up to ~30 seconds)
+    let attempts = 0;
+    const maxAttempts = 15; // ~30 seconds
+
+    while (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 2000)); // wait 2 seconds
+
+      const statusRes = await fetch(`https://api.x.ai/v1/video/status/${requestId}`, {
+        headers: { "Authorization": `Bearer ${apiKey}` },
+      });
+
+      if (!statusRes.ok) continue;
+
+      const statusData = await statusRes.json();
+
+      if (statusData.status === "completed" && statusData.video_url) {
+        return NextResponse.json({ videoUrl: statusData.video_url });
+      }
+
+      if (statusData.status === "failed") {
+        return NextResponse.json({ error: statusData.error || "Generation failed" }, { status: 500 });
+      }
+
+      attempts++;
+    }
+
+    return NextResponse.json({ error: "Generation timed out. Try a simpler prompt." }, { status: 408 });
 
   } catch (error: any) {
-    console.error("Imagine Video error:", error);
-    return NextResponse.json({ error: error.message || "Failed to generate video" }, { status: 500 });
+    console.error("Grok Imagine Video error:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
