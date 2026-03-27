@@ -54,21 +54,16 @@ export default function Home() {
   const [showAbout, setShowAbout] = useState(false);
   const [activeTab, setActiveTab] = useState<"code" | "video" | "audio" | "editing" | "builder">("code");
 
-  // Original page navigation (kept untouched)
+  // Original page navigation
   const [currentPage, setCurrentPage] = useState<"playground" | "howitworks" | "tutorials" | "features" | "examples" | "about">("playground");
 
-  // Studio tabs
-  const [currentSection, setCurrentSection] = useState<"code" | "video" | "audio" | "text" | "imagine">("code");
+  // Studio tabs (Code / Audio / Text / Grok Imagine)
+  const [currentSection, setCurrentSection] = useState<"code" | "audio" | "text" | "imagine">("code");
 
   const [prompt, setPrompt] = useState("");
   const [selectedLang, setSelectedLang] = useState("javascript");
   const [generatedCode, setGeneratedCode] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-
-  // Video states
-  const [videoPrompt, setVideoPrompt] = useState("");
-  const [generatedVideoUrl, setGeneratedVideoUrl] = useState("");
-  const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
 
   // Audio states
   const [audioPrompt, setAudioPrompt] = useState("");
@@ -79,10 +74,10 @@ export default function Home() {
   const [textContent, setTextContent] = useState("Start writing here... Try the AI Improve button below.");
   const [isGeneratingText, setIsGeneratingText] = useState(false);
 
-  // Grok Imagine (text-to-video) states
+  // Grok Imagine (Image Generation) states
   const [imaginePrompt, setImaginePrompt] = useState("");
-  const [generatedImagineVideoUrl, setGeneratedImagineVideoUrl] = useState("");
-  const [isGeneratingImagine, setIsGeneratingImagine] = useState(false);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState("");
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -192,22 +187,7 @@ export default function Home() {
     }
   };
 
-  // Video Generation (existing)
-  const handleGenerateVideo = async () => {
-    if (!videoPrompt.trim()) return;
-    setIsGeneratingVideo(true);
-    setGeneratedVideoUrl("");
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2800));
-      setGeneratedVideoUrl("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
-    } catch (error) {
-      alert("Video generation failed.");
-    } finally {
-      setIsGeneratingVideo(false);
-    }
-  };
-
-  // Audio Generation
+  // Audio Generation (placeholder)
   const handleGenerateAudio = async () => {
     if (!audioPrompt.trim()) return;
     setIsGeneratingAudio(true);
@@ -235,15 +215,15 @@ export default function Home() {
     }
   };
 
-  // Grok Imagine Text-to-Video
-  const handleGenerateImagineVideo = async () => {
+  // Grok Imagine Image Generation (Text-to-Image)
+  const handleGenerateImagineImage = async () => {
     if (!imaginePrompt.trim()) return;
 
-    setIsGeneratingImagine(true);
-    setGeneratedImagineVideoUrl("");
+    setIsGeneratingImage(true);
+    setGeneratedImageUrl("");
 
     try {
-      const res = await fetch("/api/imagine-video", {
+      const res = await fetch("/api/imagine-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: imaginePrompt }),
@@ -257,12 +237,12 @@ export default function Home() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      setGeneratedImagineVideoUrl(data.videoUrl);
+      setGeneratedImageUrl(data.imageUrl);
     } catch (error: any) {
       console.error("Grok Imagine error:", error);
       alert(`Grok Imagine failed: ${error.message}`);
     } finally {
-      setIsGeneratingImagine(false);
+      setIsGeneratingImage(false);
     }
   };
 
@@ -325,13 +305,10 @@ export default function Home() {
         </div>
       </aside>
 
-      {/* Top Tabs */}
+      {/* Top Tabs - Now includes Grok Imagine for Images */}
       <div className="absolute top-6 left-80 right-0 z-30 flex gap-3 px-8 bg-black/80 backdrop-blur-md py-4 border-b border-zinc-800">
         <button onClick={() => setCurrentSection("code")} className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-medium transition ${currentSection === "code" ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
           <Code size={18} /> Code Playground
-        </button>
-        <button onClick={() => setCurrentSection("video")} className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-medium transition ${currentSection === "video" ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
-          <Video size={18} /> Video Studio
         </button>
         <button onClick={() => setCurrentSection("audio")} className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-medium transition ${currentSection === "audio" ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
           <Mic size={18} /> Audio Studio
@@ -340,7 +317,7 @@ export default function Home() {
           <List size={18} /> Text Editor
         </button>
         <button onClick={() => setCurrentSection("imagine")} className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-medium transition ${currentSection === "imagine" ? "bg-white text-black" : "hover:bg-zinc-900"}`}>
-          <Video size={18} /> Grok Imagine (Text-to-Video)
+          <Image size={18} /> Grok Imagine (Text-to-Image)
         </button>
       </div>
 
@@ -409,35 +386,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Video Studio */}
-        {currentSection === "video" && (
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-5xl font-bold mb-4">Video Studio</h2>
-            <p className="text-xl text-zinc-400 mb-8">Describe any video you want.</p>
-            <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8">
-              <input
-                type="text"
-                value={videoPrompt}
-                onChange={(e) => setVideoPrompt(e.target.value)}
-                placeholder="A dog running happily in the park at sunset..."
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg mb-6 focus:outline-none focus:border-violet-500"
-              />
-              <button
-                onClick={handleGenerateVideo}
-                disabled={isGeneratingVideo || !videoPrompt.trim()}
-                className="bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 px-8 py-4 rounded-2xl font-medium w-full text-lg"
-              >
-                {isGeneratingVideo ? "Generating Video..." : "Generate Video"}
-              </button>
-            </div>
-            {generatedVideoUrl && (
-              <div className="mt-10 bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden">
-                <video controls className="w-full" src={generatedVideoUrl} autoPlay muted loop />
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Audio Studio */}
         {currentSection === "audio" && (
           <div className="max-w-4xl mx-auto">
@@ -486,34 +434,44 @@ export default function Home() {
           </div>
         )}
 
-        {/* Grok Imagine Text-to-Video */}
+        {/* Grok Imagine - Image Generation (Text-to-Image) */}
         {currentSection === "imagine" && (
           <div className="max-w-4xl mx-auto">
             <h2 className="text-5xl font-bold mb-4">Grok Imagine Studio</h2>
-            <p className="text-xl text-zinc-400 mb-8">Describe any video you want to generate. Example: "a dog running happily in the park at sunset with cinematic camera movement"</p>
+            <p className="text-xl text-zinc-400 mb-8">Describe any image you want to generate. Example: "a majestic dog running in a sunny park at sunset, cinematic lighting, highly detailed"</p>
             
             <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8">
               <input
                 type="text"
                 value={imaginePrompt}
                 onChange={(e) => setImaginePrompt(e.target.value)}
-                placeholder="A dog running happily in the park at sunset..."
+                placeholder="A majestic dog running in a sunny park at sunset..."
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg mb-6 focus:outline-none focus:border-violet-500"
               />
               <button
-                onClick={handleGenerateImagineVideo}
-                disabled={isGeneratingImagine || !imaginePrompt.trim()}
+                onClick={handleGenerateImagineImage}
+                disabled={isGeneratingImage || !imaginePrompt.trim()}
                 className="bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 px-8 py-4 rounded-2xl font-medium w-full text-lg"
               >
-                {isGeneratingImagine ? "Generating with Grok Imagine... (this may take 10-30 seconds)" : "Generate Video with Grok Imagine"}
+                {isGeneratingImage ? "Generating Image with Grok Imagine..." : "Generate Image with Grok Imagine"}
               </button>
             </div>
 
-            {generatedImagineVideoUrl && (
-              <div className="mt-10 bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden">
-                <video controls className="w-full" src={generatedImagineVideoUrl} autoPlay muted loop>
-                  Your browser does not support the video tag.
-                </video>
+            {generatedImageUrl && (
+              <div className="mt-10 bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden p-6">
+                <img 
+                  src={generatedImageUrl} 
+                  alt="Grok Imagine generated image" 
+                  className="w-full rounded-2xl shadow-2xl" 
+                />
+                <div className="mt-4 text-center">
+                  <button 
+                    onClick={() => window.open(generatedImageUrl, '_blank')}
+                    className="text-violet-400 hover:text-violet-300 underline"
+                  >
+                    Download Image
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -565,7 +523,7 @@ export default function Home() {
         {currentPage === "about" && (
           <div className="max-w-4xl mx-auto">
             <h2 className="text-5xl font-bold mb-8">About CodeOmniverse</h2>
-            <p className="text-xl text-zinc-400">The ultimate AI hub for developers who want to generate code, videos, audio, and more in one place.</p>
+            <p className="text-xl text-zinc-400">The ultimate AI hub for developers who want to generate code, images, audio, and more in one place.</p>
           </div>
         )}
       </main>
