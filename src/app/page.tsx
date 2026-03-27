@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Info, Code, Copy } from "lucide-react";
+import { Copy } from "lucide-react";
 import Editor from "@monaco-editor/react";
 
 export default function Home() {
@@ -9,11 +9,10 @@ export default function Home() {
   const [selectedLang, setSelectedLang] = useState("javascript");
   const [generatedCode, setGeneratedCode] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showAbout, setShowAbout] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Particle Background (your original - untouched)
+  // Particle Background
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -119,36 +118,36 @@ export default function Home() {
     }
   };
 
+  // Example Prompts
+  const examplePrompts = [
+    "React todo app with dark mode and local storage",
+    "Python script to analyze CSV sales data",
+    "Tailwind dashboard layout with sidebar",
+    "Node.js API endpoint for user login",
+    "Simple Snake game in JavaScript",
+  ];
+
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
 
-      {/* Main Content - Full width, no sidebar */}
-      <main className="relative z-10 min-h-screen pt-12 pb-12 px-8">
+      <main className="relative z-10 min-h-screen pt-16 pb-20 px-6">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
-          <div className="flex justify-between items-center mb-12">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-3xl">C</div>
-              <h1 className="text-4xl font-bold tracking-tighter">CodeOmniverse</h1>
+          <div className="text-center mb-16">
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center text-white font-bold text-5xl shadow-2xl">
+                C
+              </div>
             </div>
-
-            <button 
-              onMouseEnter={() => setShowAbout(true)} 
-              onMouseLeave={() => setShowAbout(false)}
-              className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white px-4 py-2 hover:bg-zinc-900 rounded-2xl"
-            >
-              <Info size={18} /> About
-            </button>
+            <h1 className="text-7xl font-bold tracking-tighter mb-4">CodeOmniverse</h1>
+            <p className="text-2xl text-zinc-400 max-w-2xl mx-auto">
+              Describe what you want to build.<br />Get clean, working code instantly.
+            </p>
           </div>
 
-          {/* Code Generation Section */}
-          <div className="text-center mb-12">
-            <h2 className="text-6xl font-bold tracking-tighter mb-4">Generate Code Instantly</h2>
-            <p className="text-2xl text-zinc-400">Describe what you want. Get clean, working code.</p>
-          </div>
-
-          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-10">
+          {/* Input Area */}
+          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-10 mb-12">
             <div className="flex gap-4 mb-8">
               <select
                 value={selectedLang}
@@ -167,22 +166,36 @@ export default function Home() {
                 type="text"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Describe what you want to build... (e.g. React todo app with dark mode)"
+                placeholder="Describe what you want to build..."
                 className="flex-1 bg-zinc-800 border border-zinc-700 rounded-2xl px-8 py-4 text-xl focus:outline-none focus:border-violet-500"
               />
 
               <button
                 onClick={handleGenerateCode}
                 disabled={isGenerating || !prompt.trim()}
-                className="bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 px-10 py-4 rounded-2xl font-medium text-lg flex items-center gap-3 transition"
+                className="bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 px-10 py-4 rounded-2xl font-medium text-lg flex items-center gap-3 transition min-w-[180px] justify-center"
               >
                 {isGenerating ? "Generating..." : "Generate Code"}
               </button>
             </div>
+
+            {/* Example Prompts */}
+            <div className="flex flex-wrap gap-3">
+              {examplePrompts.map((example, index) => (
+                <button
+                  key={index}
+                  onClick={() => setPrompt(example)}
+                  className="text-sm bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-5 py-2.5 rounded-2xl transition text-zinc-300 hover:text-white"
+                >
+                  {example}
+                </button>
+              ))}
+            </div>
           </div>
 
+          {/* Generated Code */}
           {generatedCode && (
-            <div className="mt-10 bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden">
+            <div className="bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl">
               <div className="p-5 bg-zinc-900 border-b border-zinc-800 flex justify-between items-center">
                 <span className="font-medium text-lg">Generated {selectedLang} Code</span>
                 <button 
@@ -193,7 +206,7 @@ export default function Home() {
                 </button>
               </div>
               <Editor
-                height="720px"
+                height="740px"
                 language={selectedLang === "html" ? "html" : selectedLang}
                 value={generatedCode}
                 theme="vs-dark"
