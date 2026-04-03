@@ -1,16 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Copy } from "lucide-react";
+import { Copy, User, X } from "lucide-react";
 import Editor from "@monaco-editor/react";
-
-interface BlogPost {
-  id: number;
-  title: string;
-  date: string;
-  excerpt: string;
-  content: string;
-}
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
@@ -18,12 +10,24 @@ export default function Home() {
   const [generatedCode, setGeneratedCode] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Blog state
-  const [selectedBlog, setSelectedBlog] = useState<BlogPost | null>(null);
+  // Navigation
+  const [currentView, setCurrentView] = useState<"home" | "contact" | "privacy" | "terms">("home");
+
+  // Auth
+  const [showAuth, setShowAuth] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
+  const [currentUser, setCurrentUser] = useState<{ email: string; username: string; password: string; history: Array<{ id: number; prompt: string; language: string; code: string; timestamp: string }> } | null>(null);
+
+  // History
+  const [history, setHistory] = useState<Array<{ id: number; prompt: string; language: string; code: string; timestamp: string }>>([]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Particle Background (untouched)
+  // Particle Background
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -92,6 +96,22 @@ export default function Home() {
     };
   }, []);
 
+  // Load saved user on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("currentUser");
+    if (saved) {
+      const user = JSON.parse(saved);
+      setCurrentUser(user);
+      setIsLoggedIn(true);
+      setUsername(user.username);
+      setHistory(user.history || []);
+    }
+  }, []);
+
+  const saveUser = (user: any) => {
+    localStorage.setItem("currentUser", JSON.stringify(user));
+  };
+
   const handleGenerateCode = async () => {
     if (!prompt.trim()) return;
     setIsGenerating(true);
@@ -110,7 +130,26 @@ export default function Home() {
         .replace(/```\s*$/g, '')
         .replace(/^```.*\n?/gm, '')
         .trim();
-      setGeneratedCode(code || "// No code was generated.");
+
+      const newCode = code || "// No code was generated.";
+      setGeneratedCode(newCode);
+
+      // Save to history if logged in
+      if (isLoggedIn && currentUser) {
+        const newEntry = {
+          id: Date.now(),
+          prompt,
+          language: selectedLang,
+          code: newCode,
+          timestamp: new Date().toISOString()
+        };
+        const updatedHistory = [newEntry, ...history];
+        setHistory(updatedHistory);
+
+        const updatedUser = { ...(currentUser as any), history: updatedHistory };
+        setCurrentUser(updatedUser);
+        saveUser(updatedUser);
+      }
     } catch (error: any) {
       setGeneratedCode(`// Error: ${error.message}`);
     } finally {
@@ -121,8 +160,61 @@ export default function Home() {
   const copyCode = () => {
     if (generatedCode) {
       navigator.clipboard.writeText(generatedCode);
-      alert("Code copied!");
+      alert("Code copied to clipboard!");
     }
+  };
+
+  const handleSignup = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!email || !password) {
+      alert("Please fill email and password");
+      return;
+    }
+    const newUser = {
+      email,
+      username: email.split('@')[0],
+      password,
+      history: []
+    };
+    localStorage.setItem("currentUser", JSON.stringify(newUser));
+    setCurrentUser(newUser);
+    setIsLoggedIn(true);
+    setUsername(newUser.username);
+    setHistory([]);
+    setShowAuth(false);
+    setEmail("");
+    setPassword("");
+    alert("Account created successfully!");
+  };
+
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const saved = localStorage.getItem("currentUser");
+    if (!saved) {
+      alert("No account found. Please sign up first.");
+      return;
+    }
+    const user = JSON.parse(saved);
+    if (user.email === email && user.password === password) {
+      setCurrentUser(user);
+      setIsLoggedIn(true);
+      setUsername(user.username);
+      setHistory(user.history || []);
+      setShowAuth(false);
+      setEmail("");
+      setPassword("");
+      alert("Login successful!");
+    } else {
+      alert("Invalid email or password");
+    }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+    setUsername("");
+    setHistory([]);
+    localStorage.removeItem("currentUser");
   };
 
   const examplePrompts = [
@@ -133,256 +225,222 @@ export default function Home() {
     "Simple Snake game in JavaScript",
   ];
 
-  // Expanded Blog Posts
-  const blogPosts = [
-    {
-      id: 1,
-      title: "How to Build a React Todo App with AI in Under 5 Minutes",
-      date: "March 2026",
-      excerpt: "Learn how CodeOmniverse can generate a complete todo app with dark mode and persistence.",
-      content: `
-        <h3>Why Use AI for Todo Apps?</h3>
-        <p>Building a todo app is a classic beginner project, but it still takes time to set up state management, local storage, and UI. With CodeOmniverse, you can generate the entire app in seconds.</p>
-        
-        <h3>Step-by-Step</h3>
-        <p>1. Type: "React todo app with dark mode and local storage"</p>
-        <p>2. Choose JavaScript or TypeScript</p>
-        <p>3. Get a complete functional component with useState, useEffect, and persistence.</p>
-        
-        <p>The generated code includes add, delete, toggle, and clear completed features — all ready to copy and run.</p>
-        
-        <p>This approach saves hours and helps you learn modern React patterns faster.</p>
-      `
-    },
-    {
-      id: 2,
-      title: "Best AI Coding Tools Comparison 2026",
-      date: "March 2026",
-      excerpt: "We tested Grok, Claude, Cursor, and more. See which one actually saves developers the most time.",
-      content: `
-        <p>In 2026, AI coding assistants have become essential. But which one is truly the best?</p>
-        
-        <h3>Our Testing Criteria</h3>
-        <p>We evaluated speed, code quality, ease of use, and real-world productivity.</p>
-        
-        <p><strong>Grok 4</strong> excelled in complex logic and creative solutions.</p>
-        <p><strong>Claude</strong> was best for clean, well-documented code.</p>
-        <p><strong>Cursor</strong> won for IDE integration.</p>
-        
-        <p>CodeOmniverse stands out by focusing purely on fast, clean code generation without distractions.</p>
-      `
-    },
-    {
-      id: 3,
-      title: "Python Automation Scripts You Can Generate Instantly",
-      date: "February 2026",
-      excerpt: "From data analysis to web scraping — real examples generated by CodeOmniverse.",
-      content: `
-        <p>Python is perfect for automation, but writing scripts from scratch takes time.</p>
-        
-        <p>With CodeOmniverse, you can generate scripts for:</p>
-        <ul>
-          <li>CSV data analysis with pandas and matplotlib</li>
-          <li>Web scraping with BeautifulSoup</li>
-          <li>File organization and renaming</li>
-          <li>Daily report generation</li>
-        </ul>
-        
-        <p>Just describe the task and get ready-to-run code with error handling included.</p>
-      `
-    },
-    {
-      id: 4,
-      title: "Prompt Engineering Tips for Better Code Generation",
-      date: "February 2026",
-      excerpt: "How to write prompts that give you cleaner, more accurate code every time.",
-      content: `
-        <p>Good prompts = better code.</p>
-        
-        <h3>Pro Tips</h3>
-        <ul>
-          <li>Be specific about language and framework</li>
-          <li>Mention desired features clearly</li>
-          <li>Ask for comments and error handling</li>
-          <li>Include "make it clean and modern"</li>
-        </ul>
-        
-        <p>Example good prompt: "Create a React todo app with dark mode, local storage, and smooth animations using Tailwind."</p>
-      `
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
 
       <main className="relative z-10 min-h-screen pt-16 pb-24 px-6">
         <div className="max-w-5xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center text-white font-bold text-5xl shadow-2xl">
-                C
-              </div>
-            </div>
-            <h1 className="text-7xl font-bold tracking-tighter mb-4">CodeOmniverse</h1>
-            <p className="text-2xl text-zinc-400">Describe your idea. Get clean, working code instantly.</p>
-          </div>
-
-          {/* Main Code Generator */}
-          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-10 mb-16">
-            <div className="flex gap-4 mb-8">
-              <select
-                value={selectedLang}
-                onChange={(e) => setSelectedLang(e.target.value)}
-                className="bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-violet-500"
-              >
-                <option value="javascript">JavaScript</option>
-                <option value="typescript">TypeScript</option>
-                <option value="python">Python</option>
-                <option value="rust">Rust</option>
-                <option value="go">Go</option>
-                <option value="html">HTML/CSS</option>
-              </select>
-
-              <input
-                type="text"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Describe what you want to build..."
-                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-2xl px-8 py-4 text-xl focus:outline-none focus:border-violet-500"
-              />
-
-              <button
-                onClick={handleGenerateCode}
-                disabled={isGenerating || !prompt.trim()}
-                className="bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 px-10 py-4 rounded-2xl font-medium text-lg flex items-center gap-3 transition min-w-[180px] justify-center"
-              >
-                {isGenerating ? "Generating..." : "Generate Code"}
-              </button>
+          {/* Top Navigation */}
+          <div className="flex justify-between items-center mb-12">
+            <div className="flex gap-8 text-sm">
+              <button onClick={() => setCurrentView("home")} className={`hover:text-violet-400 transition ${currentView === "home" ? "text-white font-medium" : "text-zinc-400"}`}>Home</button>
+              <button onClick={() => setCurrentView("contact")} className={`hover:text-violet-400 transition ${currentView === "contact" ? "text-white font-medium" : "text-zinc-400"}`}>Contact</button>
+              <button onClick={() => setCurrentView("privacy")} className={`hover:text-violet-400 transition ${currentView === "privacy" ? "text-white font-medium" : "text-zinc-400"}`}>Privacy</button>
+              <button onClick={() => setCurrentView("terms")} className={`hover:text-violet-400 transition ${currentView === "terms" ? "text-white font-medium" : "text-zinc-400"}`}>Terms</button>
             </div>
 
             <div>
-              <p className="text-zinc-400 mb-3 text-sm">Try these examples:</p>
-              <div className="flex flex-wrap gap-3">
-                {examplePrompts.map((example, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setPrompt(example)}
-                    className="text-sm bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-5 py-2.5 rounded-2xl transition text-zinc-300 hover:text-white"
-                  >
-                    {example}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Generated Code */}
-          {generatedCode && (
-            <div className="bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden mb-20">
-              <div className="p-5 bg-zinc-900 border-b border-zinc-800 flex justify-between items-center">
-                <span className="font-medium text-lg">Generated {selectedLang} Code</span>
-                <button onClick={copyCode} className="flex items-center gap-2 text-zinc-400 hover:text-white px-5 py-2 rounded-xl hover:bg-zinc-800">
-                  <Copy size={20} /> Copy
-                </button>
-              </div>
-              <Editor
-                height="720px"
-                language={selectedLang === "html" ? "html" : selectedLang}
-                value={generatedCode}
-                theme="vs-dark"
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: 16,
-                  wordWrap: "on",
-                  lineNumbers: "on",
-                  automaticLayout: true,
-                }}
-              />
-            </div>
-          )}
-
-          {/* How It Works */}
-          <div className="mb-20">
-            <h2 className="text-4xl font-bold text-center mb-12">How It Works</h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center">
-                <div className="text-5xl mb-4">1️⃣</div>
-                <h3 className="text-2xl font-semibold mb-3">Describe Your Idea</h3>
-                <p className="text-zinc-400">Type what you want to build in plain English.</p>
-              </div>
-              <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center">
-                <div className="text-5xl mb-4">2️⃣</div>
-                <h3 className="text-2xl font-semibold mb-3">Choose Language</h3>
-                <p className="text-zinc-400">Select JavaScript, Python, Rust, or any other language.</p>
-              </div>
-              <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center">
-                <div className="text-5xl mb-4">3️⃣</div>
-                <h3 className="text-2xl font-semibold mb-3">Get Clean Code</h3>
-                <p className="text-zinc-400">Receive ready-to-use, well-commented code instantly.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Blog / Articles Section - Expanded */}
-          <div className="mb-20">
-            <h2 className="text-4xl font-bold text-center mb-12">Latest Articles</h2>
-            <div className="grid md:grid-cols-2 gap-8">
-              {blogPosts.map((post) => (
-                <div 
-                  key={post.id} 
-                  onClick={() => setSelectedBlog(post)}
-                  className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 hover:border-violet-500 transition cursor-pointer"
-                >
-                  <div className="text-sm text-violet-400 mb-2">{post.date}</div>
-                  <h3 className="text-2xl font-semibold mb-4 leading-tight">{post.title}</h3>
-                  <p className="text-zinc-400 mb-6 line-clamp-3">{post.excerpt}</p>
-                  <button className="text-violet-400 hover:text-violet-300 font-medium">Read Full Article →</button>
+              {isLoggedIn ? (
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-zinc-400">Hi, {username}</span>
+                  <button onClick={handleLogout} className="text-sm text-red-400 hover:text-red-300">Logout</button>
                 </div>
-              ))}
+              ) : (
+                <button 
+                  onClick={() => setShowAuth(true)}
+                  className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 px-5 py-2 rounded-2xl text-sm transition"
+                >
+                  <User size={18} /> Login / Signup
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Full Blog Post Modal */}
-          {selectedBlog && (
-            <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
-              <div className="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-10">
-                <button 
-                  onClick={() => setSelectedBlog(null)}
-                  className="float-right text-zinc-400 hover:text-white text-xl"
-                >
-                  ✕
-                </button>
-                <div className="text-sm text-violet-400 mb-4">{selectedBlog.date}</div>
-                <h2 className="text-4xl font-bold mb-8">{selectedBlog.title}</h2>
-                <div 
-                  className="prose prose-invert max-w-none text-zinc-300 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: selectedBlog.content }}
-                />
-                <button 
-                  onClick={() => setSelectedBlog(null)}
-                  className="mt-10 bg-zinc-800 hover:bg-zinc-700 px-8 py-3 rounded-2xl"
-                >
-                  Close Article
-                </button>
+          {/* HOME */}
+          {currentView === "home" && (
+            <>
+              <div className="text-center mb-16">
+                <div className="flex justify-center mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center text-white font-bold text-5xl shadow-2xl">
+                    C
+                  </div>
+                </div>
+                <h1 className="text-7xl font-bold tracking-tighter mb-4">CodeOmniverse</h1>
+                <p className="text-2xl text-zinc-400">Describe your idea. Get clean, working code instantly.</p>
               </div>
+
+              <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-10 mb-16">
+                <div className="flex gap-4 mb-8">
+                  <select value={selectedLang} onChange={(e) => setSelectedLang(e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-violet-500">
+                    <option value="javascript">JavaScript</option>
+                    <option value="typescript">TypeScript</option>
+                    <option value="python">Python</option>
+                    <option value="rust">Rust</option>
+                    <option value="go">Go</option>
+                    <option value="html">HTML/CSS</option>
+                  </select>
+
+                  <input
+                    type="text"
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="Describe what you want to build..."
+                    className="flex-1 bg-zinc-800 border border-zinc-700 rounded-2xl px-8 py-4 text-xl focus:outline-none focus:border-violet-500"
+                  />
+
+                  <button
+                    onClick={handleGenerateCode}
+                    disabled={isGenerating || !prompt.trim()}
+                    className="bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 px-10 py-4 rounded-2xl font-medium text-lg flex items-center gap-3 transition min-w-[180px] justify-center"
+                  >
+                    {isGenerating ? "Generating..." : "Generate Code"}
+                  </button>
+                </div>
+
+                <div>
+                  <p className="text-zinc-400 mb-3 text-sm">Try these examples:</p>
+                  <div className="flex flex-wrap gap-3">
+                    {examplePrompts.map((ex, i) => (
+                      <button key={i} onClick={() => setPrompt(ex)} className="text-sm bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-5 py-2.5 rounded-2xl transition text-zinc-300 hover:text-white">
+                        {ex}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {generatedCode && (
+                <div className="bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden mb-20">
+                  <div className="p-5 bg-zinc-900 border-b border-zinc-800 flex justify-between items-center">
+                    <span className="font-medium text-lg">Generated {selectedLang} Code</span>
+                    <button onClick={copyCode} className="flex items-center gap-2 text-zinc-400 hover:text-white px-5 py-2 rounded-xl hover:bg-zinc-800">
+                      <Copy size={20} /> Copy
+                    </button>
+                  </div>
+                  <Editor
+                    height="720px"
+                    language={selectedLang === "html" ? "html" : selectedLang}
+                    value={generatedCode}
+                    theme="vs-dark"
+                    options={{ minimap: { enabled: false }, fontSize: 16, wordWrap: "on", lineNumbers: "on", automaticLayout: true }}
+                  />
+                </div>
+              )}
+
+              {/* How It Works */}
+              <div className="mb-20">
+                <h2 className="text-4xl font-bold text-center mb-12">How It Works</h2>
+                <div className="grid md:grid-cols-3 gap-8">
+                  <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center">
+                    <div className="text-5xl mb-4">1️⃣</div>
+                    <h3 className="text-2xl font-semibold mb-3">Describe</h3>
+                    <p className="text-zinc-400">Type your idea in plain English.</p>
+                  </div>
+                  <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center">
+                    <div className="text-5xl mb-4">2️⃣</div>
+                    <h3 className="text-2xl font-semibold mb-3">Choose Language</h3>
+                    <p className="text-zinc-400">Pick your preferred language.</p>
+                  </div>
+                  <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center">
+                    <div className="text-5xl mb-4">3️⃣</div>
+                    <h3 className="text-2xl font-semibold mb-3">Get Code</h3>
+                    <p className="text-zinc-400">Receive clean, ready-to-use code.</p>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Contact */}
+          {currentView === "contact" && (
+            <div className="max-w-2xl mx-auto bg-zinc-900 border border-zinc-700 rounded-3xl p-12 text-center">
+              <h2 className="text-4xl font-bold mb-8">Contact Us</h2>
+              <p className="text-zinc-400 mb-10">Have questions? Reach out anytime.</p>
+              <a href="mailto:karhyoone@gmail.com" className="text-2xl text-violet-400 hover:text-violet-300">
+                karhyoone@gmail.com
+              </a>
             </div>
           )}
 
-          {/* About Section */}
-          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-12 text-center">
-            <h2 className="text-4xl font-bold mb-6">About CodeOmniverse</h2>
-            <p className="text-lg text-zinc-300 max-w-3xl mx-auto">
-              CodeOmniverse was created because we were tired of switching between scattered AI tools and fixing broken code snippets. 
-              We built a simple, fast platform where you can describe your idea in plain English and instantly get clean, working code.
-            </p>
-            <p className="text-lg text-zinc-300 max-w-3xl mx-auto mt-6">
-              Our goal is to help developers ship faster, learn better, and focus on building amazing products instead of struggling with syntax.
-            </p>
-          </div>
+          {/* Privacy */}
+          {currentView === "privacy" && (
+            <div className="max-w-3xl mx-auto bg-zinc-900 border border-zinc-700 rounded-3xl p-12 prose prose-invert">
+              <h2 className="text-4xl font-bold mb-8">Privacy Policy</h2>
+              <p>Last updated: April 2026</p>
+              <h3>Information We Collect</h3>
+              <p>We collect prompts and generated code to provide the service. No personal data is collected unless you contact us.</p>
+              <h3>Data Usage</h3>
+              <p>Your prompts are used only for generation and service improvement. We do not sell your data.</p>
+            </div>
+          )}
+
+          {/* Terms */}
+          {currentView === "terms" && (
+            <div className="max-w-3xl mx-auto bg-zinc-900 border border-zinc-700 rounded-3xl p-12 prose prose-invert">
+              <h2 className="text-4xl font-bold mb-8">Terms of Service</h2>
+              <p>Last updated: April 2026</p>
+              <h3>1. Acceptance</h3>
+              <p>By using CodeOmniverse you agree to these terms.</p>
+              <h3>2. Service</h3>
+              <p>The service is provided "as is". We are not liable for any issues with generated code.</p>
+            </div>
+          )}
         </div>
       </main>
+
+      {/* Auth Modal */}
+      {showAuth && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-md p-10 relative">
+            <button onClick={() => setShowAuth(false)} className="absolute top-6 right-6 text-zinc-400 hover:text-white">
+              <X size={24} />
+            </button>
+
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 mx-auto bg-violet-600 rounded-2xl flex items-center justify-center mb-4">
+                <User size={32} />
+              </div>
+              <h2 className="text-3xl font-bold">{isLoginMode ? "Login" : "Sign Up"}</h2>
+            </div>
+
+            <form onSubmit={isLoginMode ? handleLogin : handleSignup} className="space-y-6">
+              <div>
+                <label className="block text-sm text-zinc-400 mb-2">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-violet-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-zinc-400 mb-2">Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-violet-500"
+                  required
+                />
+              </div>
+
+              <button type="submit" className="w-full bg-violet-600 hover:bg-violet-700 py-4 rounded-2xl font-medium text-lg transition">
+                {isLoginMode ? "Login" : "Create Account"}
+              </button>
+            </form>
+
+            <div className="text-center mt-6">
+              <button onClick={() => setIsLoginMode(!isLoginMode)} className="text-violet-400 hover:text-violet-300">
+                {isLoginMode ? "Need an account? Sign up" : "Already have an account? Login"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
