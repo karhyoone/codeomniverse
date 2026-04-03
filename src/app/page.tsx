@@ -138,7 +138,7 @@ export default function Home() {
   useEffect(() => {
     const saved = localStorage.getItem("currentUser");
     if (saved) {
-      const user = JSON.parse(saved);
+      const user = JSON.parse(saved) as User;
       setCurrentUser(user);
       setIsLoggedIn(true);
       setUsername(user.username);
@@ -173,7 +173,7 @@ export default function Home() {
       setGeneratedCode(newCode);
 
       if (isLoggedIn && currentUser) {
-        const newEntry = {
+        const newEntry: HistoryEntry = {
           id: Date.now(),
           prompt,
           language: selectedLang,
@@ -200,10 +200,15 @@ export default function Home() {
     }
   };
 
-  const handleSignup = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return alert("Please fill all fields");
-    const newUser = { email, username: email.split('@')[0], password, history: [] };
+    const newUser: User = { 
+      email, 
+      username: email.split('@')[0], 
+      password, 
+      history: [] 
+    };
     localStorage.setItem("currentUser", JSON.stringify(newUser));
     setCurrentUser(newUser);
     setIsLoggedIn(true);
@@ -213,11 +218,11 @@ export default function Home() {
     alert("Account created successfully!");
   };
 
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     const saved = localStorage.getItem("currentUser");
     if (!saved) return alert("No account found. Please sign up.");
-    const user = JSON.parse(saved);
+    const user = JSON.parse(saved) as User;
     if (user.email === email && user.password === password) {
       setCurrentUser(user);
       setIsLoggedIn(true);
@@ -246,14 +251,38 @@ export default function Home() {
     "Simple Snake game in JavaScript",
   ];
 
-  const blogPosts = [
-    { id: 1, title: "How to Build a React Todo App with AI in Under 5 Minutes", date: "March 2026", excerpt: "Learn how to use CodeOmniverse to generate a fully functional todo app with dark mode and persistence.", content: `<h3>Why Use AI for Todo Apps?</h3><p>Building a todo app is a classic beginner project. With CodeOmniverse, you can generate the entire app in seconds.</p>` },
-    { id: 2, title: "Best AI Coding Tools Comparison 2026", date: "March 2026", excerpt: "We tested Grok, Claude, Cursor, and more.", content: `<p>In 2026, AI coding assistants are essential.</p>` },
-    { id: 3, title: "Python Automation Scripts You Can Generate Instantly", date: "February 2026", excerpt: "From data analysis to web scraping.", content: `<p>Generate scripts for CSV analysis and more in seconds.</p>` },
-    { id: 4, title: "Prompt Engineering Tips for Better Code Generation", date: "February 2026", excerpt: "How to write prompts that give you cleaner code.", content: `<p>Be specific about language and features.</p>` }
+  const blogPosts: BlogPost[] = [
+    { 
+      id: 1, 
+      title: "How to Build a React Todo App with AI in Under 5 Minutes", 
+      date: "March 2026", 
+      excerpt: "Learn how to use CodeOmniverse to generate a fully functional todo app with dark mode and persistence.", 
+      content: `<h3>Why Use AI for Todo Apps?</h3><p>Building a todo app is a classic beginner project. With CodeOmniverse, you can generate the entire app in seconds.</p>` 
+    },
+    { 
+      id: 2, 
+      title: "Best AI Coding Tools Comparison 2026", 
+      date: "March 2026", 
+      excerpt: "We tested Grok, Claude, Cursor, and more.", 
+      content: `<p>In 2026, AI coding assistants are essential.</p>` 
+    },
+    { 
+      id: 3, 
+      title: "Python Automation Scripts You Can Generate Instantly", 
+      date: "February 2026", 
+      excerpt: "From data analysis to web scraping.", 
+      content: `<p>Generate scripts for CSV analysis and more in seconds.</p>` 
+    },
+    { 
+      id: 4, 
+      title: "Prompt Engineering Tips for Better Code Generation", 
+      date: "February 2026", 
+      excerpt: "How to write prompts that give you cleaner code.", 
+      content: `<p>Be specific about language and features.</p>` 
+    }
   ];
 
-  // Apply theme to document
+  // Apply theme
   useEffect(() => {
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
@@ -289,7 +318,6 @@ export default function Home() {
                 </button>
               )}
 
-              {/* Settings Icon */}
               <button 
                 onClick={() => setShowSettings(true)}
                 className="p-3 hover:bg-zinc-800 rounded-2xl transition"
@@ -300,7 +328,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* HOME VIEW - All previous content preserved */}
+          {/* HOME VIEW */}
           {currentView === "home" && (
             <>
               <div className="text-center mb-16">
@@ -313,7 +341,6 @@ export default function Home() {
                 <p className="text-2xl text-zinc-400">Describe your idea. Get clean, working code instantly.</p>
               </div>
 
-              {/* Code Generator */}
               <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-10 mb-16">
                 <div className="flex gap-4 mb-8">
                   <select value={selectedLang} onChange={(e) => setSelectedLang(e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-violet-500">
@@ -415,7 +442,7 @@ export default function Home() {
             </>
           )}
 
-          {/* Contact, Privacy, Terms pages remain unchanged */}
+          {/* CONTACT */}
           {currentView === "contact" && (
             <div className="max-w-2xl mx-auto bg-zinc-900 border border-zinc-700 rounded-3xl p-12 text-center">
               <h2 className="text-4xl font-bold mb-8">Contact Us</h2>
@@ -424,38 +451,109 @@ export default function Home() {
             </div>
           )}
 
+          {/* FULL PRIVACY POLICY */}
           {currentView === "privacy" && (
-            <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-700 rounded-3xl p-12 prose prose-invert prose-lg leading-relaxed">
+            <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-700 rounded-3xl p-12 prose prose-invert prose-lg leading-relaxed overflow-auto max-h-[85vh]">
               <h2 className="text-5xl font-bold mb-10 text-center">Privacy Policy</h2>
               <p className="text-zinc-400 mb-8">Last updated: April 03, 2026</p>
+
               <h3>1. Introduction</h3>
-              <p>CodeOmniverse operates the website and AI code generation service. This Privacy Policy explains how we collect, use, disclose, and safeguard your information.</p>
-              <p>By using the Service, you agree to the collection and use of information in accordance with this policy.</p>
-              {/* Full Privacy Policy content from previous response */}
+              <p>CodeOmniverse ("we", "us", or "our") provides an AI-powered code generation platform. This Privacy Policy explains how we collect, use, disclose, and protect your information when you use our Service.</p>
+              <p>By using CodeOmniverse, you consent to the practices described in this policy.</p>
+
               <h3>2. Information We Collect</h3>
+              <p>We collect the following categories of information:</p>
               <ul>
-                <li>Personal Information: Email and username when creating an account.</li>
-                <li>Usage Data: Prompts, language, generated code, timestamps.</li>
-                <li>Technical Data: IP address, browser type, device information.</li>
+                <li><strong>Account Information:</strong> Email address and username when you create or log into an account.</li>
+                <li><strong>Usage Data:</strong> Prompts you submit, selected programming languages, generated code, and interaction timestamps.</li>
+                <li><strong>Technical Information:</strong> IP address, browser type and version, device type, operating system, and usage analytics.</li>
+                <li><strong>Stored History:</strong> Your previous generations are saved locally in your browser when you are logged in.</li>
               </ul>
+
               <h3>3. How We Use Your Information</h3>
-              <p>To provide and improve the service, store your history, respond to support, and comply with legal obligations.</p>
-              <p>We do not use your prompts to train AI models.</p>
-              {/* ... rest of the full policy from previous version ... */}
-              <p className="mt-12 text-sm text-zinc-500">Contact us at karhyoone@gmail.com for any questions.</p>
+              <p>We use the collected information to:</p>
+              <ul>
+                <li>Provide, operate, and improve the AI code generation service</li>
+                <li>Save and display your personal generation history</li>
+                <li>Respond to your support requests and communications</li>
+                <li>Monitor and prevent abuse, fraud, or technical issues</li>
+                <li>Comply with legal and regulatory requirements</li>
+              </ul>
+              <p>Important: We do not use your submitted prompts to train or improve any underlying AI models. All generation is performed in real time.</p>
+
+              <h3>4. Sharing and Disclosure</h3>
+              <p>We do not sell your personal data. We may share information only in limited circumstances:</p>
+              <ul>
+                <li>With trusted service providers who help us operate the platform (e.g., hosting services)</li>
+                <li>When required by law, court order, or government request</li>
+                <li>In connection with a merger, acquisition, or sale of assets</li>
+              </ul>
+
+              <h3>5. Data Security</h3>
+              <p>We implement reasonable administrative, technical, and physical security measures to protect your information. However, no internet transmission or electronic storage method is 100% secure. We cannot guarantee absolute security.</p>
+
+              <h3>6. Your Rights and Choices</h3>
+              <p>You may request access to, correction of, or deletion of your personal data by contacting us. You can also delete your local history by logging out and clearing your browser data.</p>
+
+              <h3>7. Children's Privacy</h3>
+              <p>Our Service is not directed at children under the age of 13. We do not knowingly collect personal information from children under 13.</p>
+
+              <h3>8. International Data Transfers</h3>
+              <p>Your data may be processed in countries outside your jurisdiction. By using the Service, you consent to such transfers.</p>
+
+              <h3>9. Changes to This Privacy Policy</h3>
+              <p>We may update this Privacy Policy from time to time. We will notify you by posting the new version on this page and updating the "Last updated" date. Continued use of the Service constitutes acceptance of the changes.</p>
+
+              <p className="mt-12 text-sm text-zinc-500">If you have any questions about this Privacy Policy, please contact us at <a href="mailto:karhyoone@gmail.com" className="text-violet-400">karhyoone@gmail.com</a>.</p>
             </div>
           )}
 
+          {/* FULL TERMS OF SERVICE */}
           {currentView === "terms" && (
-            <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-700 rounded-3xl p-12 prose prose-invert prose-lg leading-relaxed">
+            <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-700 rounded-3xl p-12 prose prose-invert prose-lg leading-relaxed overflow-auto max-h-[85vh]">
               <h2 className="text-5xl font-bold mb-10 text-center">Terms of Service</h2>
               <p className="text-zinc-400 mb-8">Last updated: April 03, 2026</p>
+
               <h3>1. Acceptance of Terms</h3>
-              <p>By accessing or using CodeOmniverse, you agree to be bound by these Terms.</p>
-              {/* Full Terms content from previous response */}
+              <p>By accessing or using CodeOmniverse, you agree to be bound by these Terms of Service and all applicable laws. If you do not agree, you must not use the Service.</p>
+
+              <h3>2. Description of the Service</h3>
+              <p>CodeOmniverse is an AI-powered platform that generates code based on user prompts. The Service is provided "as is" and "as available" without any warranties of any kind.</p>
+
+              <h3>3. User Accounts</h3>
+              <p>You are responsible for maintaining the confidentiality of your account credentials. You agree to notify us immediately of any unauthorized access to your account.</p>
+
+              <h3>4. User Prompts and Content</h3>
+              <p>You retain ownership of the prompts you submit. By submitting a prompt, you grant us a limited, non-exclusive license to use it solely to generate code for you. You are solely responsible for ensuring your prompts do not violate any laws or third-party rights.</p>
+
               <h3>5. Generated Code</h3>
-              <p>Code generated is provided for your use. You are responsible for testing and using it safely.</p>
-              <p className="mt-12 text-sm text-zinc-500">Contact us at karhyoone@gmail.com for any questions.</p>
+              <p>The code generated by the Service is provided for your personal or commercial use. We make no ownership claim over the generated code. However, due to the nature of AI, similar or identical code may be generated for other users. You are fully responsible for reviewing, testing, debugging, and ensuring the safety and correctness of any generated code before using it in production.</p>
+
+              <h3>6. Prohibited Conduct</h3>
+              <p>You agree not to:</p>
+              <ul>
+                <li>Use the Service for any illegal, harmful, or unauthorized purpose</li>
+                <li>Attempt to reverse engineer, decompile, or interfere with the Service</li>
+                <li>Submit prompts that are abusive, hateful, or infringe intellectual property rights</li>
+                <li>Overload, disrupt, or attempt to gain unauthorized access to the Service</li>
+              </ul>
+
+              <h3>7. Intellectual Property</h3>
+              <p>All rights, title, and interest in the Service, its design, technology, and branding belong to CodeOmniverse or its licensors. You may not copy, modify, distribute, or create derivative works of the Service without prior written permission.</p>
+
+              <h3>8. Disclaimers and Limitation of Liability</h3>
+              <p>The Service is provided without any warranties, express or implied. We are not liable for any damages, losses, or issues arising from the use or inability to use the Service, including any bugs, security vulnerabilities, or incorrect functionality in generated code. Our total liability shall not exceed the amount you paid us (which is zero in the current demo version).</p>
+
+              <h3>9. Termination</h3>
+              <p>We reserve the right to suspend or terminate your access to the Service at any time, with or without notice, for conduct that violates these Terms.</p>
+
+              <h3>10. Governing Law</h3>
+              <p>These Terms shall be governed by the laws of the United Arab Emirates. Any disputes shall be resolved exclusively in the courts of Dubai.</p>
+
+              <h3>11. Changes to Terms</h3>
+              <p>We may update these Terms from time to time. Your continued use of the Service after changes constitutes acceptance of the new Terms.</p>
+
+              <p className="mt-12 text-sm text-zinc-500">If you have any questions about these Terms of Service, please contact us at <a href="mailto:karhyoone@gmail.com" className="text-violet-400">karhyoone@gmail.com</a>.</p>
             </div>
           )}
         </div>
@@ -475,33 +573,17 @@ export default function Home() {
             </div>
 
             <div className="space-y-10">
-              {/* Appearance */}
               <div>
                 <h3 className="text-xl font-semibold mb-4">Appearance</h3>
                 <div className="flex gap-4">
-                  <button 
-                    onClick={() => setTheme("dark")}
-                    className={`flex-1 py-4 rounded-2xl border ${theme === "dark" ? "border-violet-500 bg-zinc-800" : "border-zinc-700"}`}
-                  >
-                    Dark Mode
-                  </button>
-                  <button 
-                    onClick={() => setTheme("light")}
-                    className={`flex-1 py-4 rounded-2xl border ${theme === "light" ? "border-violet-500 bg-zinc-800" : "border-zinc-700"}`}
-                  >
-                    Light Mode
-                  </button>
+                  <button onClick={() => setTheme("dark")} className={`flex-1 py-4 rounded-2xl border ${theme === "dark" ? "border-violet-500 bg-zinc-800" : "border-zinc-700"}`}>Dark Mode</button>
+                  <button onClick={() => setTheme("light")} className={`flex-1 py-4 rounded-2xl border ${theme === "light" ? "border-violet-500 bg-zinc-800" : "border-zinc-700"}`}>Light Mode</button>
                 </div>
               </div>
 
-              {/* Site Language */}
               <div>
                 <h3 className="text-xl font-semibold mb-4">Site Language</h3>
-                <select 
-                  value={siteLanguage} 
-                  onChange={(e) => setSiteLanguage(e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-violet-500"
-                >
+                <select value={siteLanguage} onChange={(e) => setSiteLanguage(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-violet-500">
                   <option value="English">English</option>
                   <option value="Spanish">Spanish</option>
                   <option value="French">French</option>
@@ -514,56 +596,77 @@ export default function Home() {
                 </select>
               </div>
 
-              {/* Widgets */}
               <div>
                 <h3 className="text-xl font-semibold mb-4">Widgets & Visibility</h3>
                 <div className="space-y-4">
                   <label className="flex items-center gap-3 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={showWidgets.howItWorks} 
-                      onChange={() => setShowWidgets({...showWidgets, howItWorks: !showWidgets.howItWorks})} 
-                      className="w-5 h-5 accent-violet-500"
-                    />
+                    <input type="checkbox" checked={showWidgets.howItWorks} onChange={() => setShowWidgets({...showWidgets, howItWorks: !showWidgets.howItWorks})} className="w-5 h-5 accent-violet-500" />
                     <span>How It Works Section</span>
                   </label>
                   <label className="flex items-center gap-3 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={showWidgets.blog} 
-                      onChange={() => setShowWidgets({...showWidgets, blog: !showWidgets.blog})} 
-                      className="w-5 h-5 accent-violet-500"
-                    />
+                    <input type="checkbox" checked={showWidgets.blog} onChange={() => setShowWidgets({...showWidgets, blog: !showWidgets.blog})} className="w-5 h-5 accent-violet-500" />
                     <span>Blog / Articles Section</span>
                   </label>
                   <label className="flex items-center gap-3 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={showWidgets.examples} 
-                      onChange={() => setShowWidgets({...showWidgets, examples: !showWidgets.examples})} 
-                      className="w-5 h-5 accent-violet-500"
-                    />
+                    <input type="checkbox" checked={showWidgets.examples} onChange={() => setShowWidgets({...showWidgets, examples: !showWidgets.examples})} className="w-5 h-5 accent-violet-500" />
                     <span>Example Prompts</span>
                   </label>
                 </div>
               </div>
             </div>
 
-            <button 
-              onClick={() => setShowSettings(false)}
-              className="mt-10 w-full bg-violet-600 hover:bg-violet-700 py-4 rounded-2xl font-medium"
-            >
+            <button onClick={() => setShowSettings(false)} className="mt-10 w-full bg-violet-600 hover:bg-violet-700 py-4 rounded-2xl font-medium">
               Save & Close
             </button>
           </div>
         </div>
       )}
 
-      {/* Auth and Blog Modals (unchanged) */}
+      {/* Auth Modal */}
       {showAuth && (
-        // ... same auth modal as before
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
-          {/* Auth content same as previous version */}
+          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-md p-10 relative">
+            <button onClick={() => setShowAuth(false)} className="absolute top-6 right-6 text-zinc-400 hover:text-white">
+              <X size={24} />
+            </button>
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 mx-auto bg-violet-600 rounded-2xl flex items-center justify-center mb-4">
+                <User size={32} />
+              </div>
+              <h2 className="text-3xl font-bold">{isLoginMode ? "Login" : "Sign Up"}</h2>
+            </div>
+            <form onSubmit={isLoginMode ? handleLogin : handleSignup} className="space-y-6">
+              <div>
+                <label className="block text-sm text-zinc-400 mb-2">Email</label>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-violet-500" required />
+              </div>
+              <div>
+                <label className="block text-sm text-zinc-400 mb-2">Password</label>
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-violet-500" required />
+              </div>
+              <button type="submit" className="w-full bg-violet-600 hover:bg-violet-700 py-4 rounded-2xl font-medium text-lg transition">
+                {isLoginMode ? "Login" : "Create Account"}
+              </button>
+            </form>
+            <div className="text-center mt-6">
+              <button onClick={() => setIsLoginMode(!isLoginMode)} className="text-violet-400 hover:text-violet-300">
+                {isLoginMode ? "Need an account? Sign up" : "Already have an account? Login"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Blog Modal */}
+      {selectedBlog && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-10">
+            <button onClick={() => setSelectedBlog(null)} className="float-right text-zinc-400 hover:text-white text-xl">✕</button>
+            <div className="text-sm text-violet-400 mb-4">{selectedBlog.date}</div>
+            <h2 className="text-4xl font-bold mb-8">{selectedBlog.title}</h2>
+            <div className="prose prose-invert max-w-none text-zinc-300 leading-relaxed" dangerouslySetInnerHTML={{ __html: selectedBlog.content }} />
+            <button onClick={() => setSelectedBlog(null)} className="mt-10 bg-zinc-800 hover:bg-zinc-700 px-8 py-3 rounded-2xl">Close Article</button>
+          </div>
         </div>
       )}
     </div>
