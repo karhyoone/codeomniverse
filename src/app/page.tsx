@@ -1,14 +1,26 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, Session, AuthChangeEvent } from "@supabase/supabase-js";
 import { Copy, User, X, Settings as SettingsIcon } from "lucide-react";
 import Editor from "@monaco-editor/react";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Lazy Supabase client - prevents build-time error
+let supabaseInstance: any = null;
+
+const getSupabase = () => {
+  if (!supabaseInstance) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!url || !key) {
+      throw new Error("Supabase URL and Anon Key are missing. Check Vercel Environment Variables.");
+    }
+
+    supabaseInstance = createClient(url, key);
+  }
+  return supabaseInstance;
+};
 
 interface HistoryEntry {
   id: number;
@@ -44,7 +56,7 @@ export default function Home() {
   const [username, setUsername] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
 
-  // History (now per user in Supabase)
+  // History
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
   // Blog
@@ -64,7 +76,6 @@ export default function Home() {
 
   // Particle Background (unchanged)
   useEffect(() => {
-    // ... your existing particle code remains exactly the same ...
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -132,9 +143,12 @@ export default function Home() {
     };
   }, []);
 
-  // Check auth state on load
+  // Handle Supabase Auth (including magic link callback)
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const supabase = getSupabase();
+
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }: { data: { session: any } }) => {
       if (session) {
         setIsLoggedIn(true);
         setUsername(session.user.email?.split('@')[0] || "User");
@@ -143,7 +157,8 @@ export default function Home() {
       }
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+    // Listen for auth changes (including after clicking email link)
+    const { data: listener } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       if (session) {
         setIsLoggedIn(true);
         setUsername(session.user.email?.split('@')[0] || "User");
@@ -161,14 +176,15 @@ export default function Home() {
   }, []);
 
   const loadUserHistory = async (uid: string) => {
+    const supabase = getSupabase();
     const { data } = await supabase
       .from('user_history')
       .select('*')
       .eq('user_id', uid)
       .order('created_at', { ascending: false });
-    
+
     if (data) {
-      setHistory(data.map(item => ({
+      setHistory(data.map((item: any) => ({
         id: item.id,
         prompt: item.prompt,
         language: item.language,
@@ -201,15 +217,14 @@ export default function Home() {
       setGeneratedCode(newCode);
 
       if (isLoggedIn && userId) {
-        const newEntry = {
+        const supabase = getSupabase();
+        await supabase.from('user_history').insert({
+          user_id: userId,
           prompt,
           language: selectedLang,
-          code: newCode,
-          user_id: userId
-        };
-
-        await supabase.from('user_history').insert(newEntry);
-        loadUserHistory(userId); // refresh history
+          code: newCode
+        });
+        loadUserHistory(userId);
       }
     } catch (error: any) {
       setGeneratedCode(`// Error: ${error.message}`);
@@ -220,48 +235,60 @@ export default function Home() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("Check your email to confirm your account!");
+    try {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) alert(error.message);
+      else alert("Check your email to confirm your account!");
       setShowAuth(false);
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) {
-      alert(error.message);
-    } else {
-      setShowAuth(false);
+    try {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) alert(error.message);
+      else setShowAuth(false);
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
   const handleLogout = async () => {
+    const supabase = getSupabase();
     await supabase.auth.signOut();
-    setIsLoggedIn(false);
-    setUsername("");
-    setUserId(null);
-    setHistory([]);
   };
 
-  // Rest of your code (examplePrompts, blogPosts, settings modal, etc.) remains exactly the same
-  const examplePrompts = [ /* your list */ ];
-  const blogPosts = [ /* your list */ ];
+  const examplePrompts = [
+    "React todo app with dark mode and local storage",
+    "Python script to analyze CSV sales data",
+    "Tailwind dashboard layout with sidebar",
+    "Node.js API for user authentication",
+    "Simple Snake game in JavaScript",
+  ];
+
+  const blogPosts: BlogPost[] = [
+    { id: 1, title: "How to Build a React Todo App with AI in Under 5 Minutes", date: "March 2026", excerpt: "Learn how to use CodeOmniverse to generate a fully functional todo app with dark mode and persistence.", content: `<h3>Why Use AI for Todo Apps?</h3><p>Building a todo app is a classic beginner project. With CodeOmniverse, you can generate the entire app in seconds.</p>` },
+    { id: 2, title: "Best AI Coding Tools Comparison 2026", date: "March 2026", excerpt: "We tested Grok, Claude, Cursor, and more.", content: `<p>In 2026, AI coding assistants are essential.</p>` },
+    { id: 3, title: "Python Automation Scripts You Can Generate Instantly", date: "February 2026", excerpt: "From data analysis to web scraping.", content: `<p>Generate scripts for CSV analysis and more in seconds.</p>` },
+    { id: 4, title: "Prompt Engineering Tips for Better Code Generation", date: "February 2026", excerpt: "How to write prompts that give you cleaner code.", content: `<p>Be specific about language and features.</p>` }
+  ];
+
+  // Apply theme
+  useEffect(() => {
+    if (theme === "dark") document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
+  }, [theme]);
 
   return (
     <div className={`min-h-screen ${theme === "dark" ? "bg-black text-white" : "bg-zinc-100 text-zinc-900"} relative overflow-hidden`}>
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
 
-      {/* Auth Gate - First thing users see */}
+      {/* Auth Gate */}
       {!isLoggedIn ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
           <div className="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-md p-12 text-center">
@@ -272,45 +299,27 @@ export default function Home() {
             <p className="text-zinc-400 mb-10">Sign in or create an account to start generating code</p>
 
             <form onSubmit={isLoginMode ? handleLogin : handleSignup} className="space-y-6">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email address"
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg"
-                required
-              />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg"
-                required
-              />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg" required />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg" required />
               <button type="submit" className="w-full bg-violet-600 hover:bg-violet-700 py-4 rounded-2xl font-medium text-lg">
                 {isLoginMode ? "Sign In" : "Create Account"}
               </button>
             </form>
 
-            <button 
-              onClick={() => setIsLoginMode(!isLoginMode)}
-              className="mt-6 text-violet-400 hover:text-violet-300"
-            >
+            <button onClick={() => setIsLoginMode(!isLoginMode)} className="mt-6 text-violet-400 hover:text-violet-300">
               {isLoginMode ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
             </button>
           </div>
         </div>
       ) : (
-        // Your normal site content (home, contact, privacy, terms, settings, etc.)
-        // ... paste the rest of your main content here (the part after the auth gate in previous versions)
+        // Normal site content
         <main className="relative z-10 min-h-screen pt-16 pb-24 px-6">
-          {/* Your full existing main content goes here */}
-          {/* Navigation, Home view with generator, settings icon, etc. */}
+          {/* Your full navigation + generator + settings + modals go here */}
+          {/* Paste the rest of your main content from previous version here */}
         </main>
       )}
 
-      {/* Keep your Settings, Auth (for switching), Blog modals here as before */}
+      {/* Settings Modal, Blog Modal, etc. remain the same */}
     </div>
   );
 }
