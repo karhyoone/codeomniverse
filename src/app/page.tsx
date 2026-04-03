@@ -81,7 +81,6 @@ export default function Home() {
     };
   }, []);
 
-  // Code Generation
   const handleGenerateCode = async () => {
     if (!prompt.trim()) return;
     setIsGenerating(true);
@@ -92,9 +91,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt, language: selectedLang }),
       });
-      if (!res.ok) {
-        throw new Error(`Server error: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
       const data = await res.json();
       let code = data.code || "";
       code = code
@@ -104,8 +101,7 @@ export default function Home() {
         .trim();
       setGeneratedCode(code || "// No code was generated.");
     } catch (error: any) {
-      console.error("Generation error:", error);
-      setGeneratedCode(`// Error: ${error.message || "Failed to generate code. Please check your GROK_API_KEY in Vercel."}`);
+      setGeneratedCode(`// Error: ${error.message}`);
     } finally {
       setIsGenerating(false);
     }
@@ -114,16 +110,15 @@ export default function Home() {
   const copyCode = () => {
     if (generatedCode) {
       navigator.clipboard.writeText(generatedCode);
-      alert("Code copied to clipboard!");
+      alert("Code copied!");
     }
   };
 
-  // Example Prompts
   const examplePrompts = [
     "React todo app with dark mode and local storage",
-    "Python script to analyze CSV sales data",
-    "Tailwind dashboard layout with sidebar",
-    "Node.js API endpoint for user login",
+    "Python script to analyze CSV sales data and show charts",
+    "Tailwind dashboard layout with sidebar and cards",
+    "Node.js API for user authentication with JWT",
     "Simple Snake game in JavaScript",
   ];
 
@@ -131,7 +126,7 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
 
-      <main className="relative z-10 min-h-screen pt-16 pb-20 px-6">
+      <main className="relative z-10 min-h-screen pt-16 pb-24 px-6">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="text-center mb-16">
@@ -141,13 +136,11 @@ export default function Home() {
               </div>
             </div>
             <h1 className="text-7xl font-bold tracking-tighter mb-4">CodeOmniverse</h1>
-            <p className="text-2xl text-zinc-400 max-w-2xl mx-auto">
-              Describe what you want to build.<br />Get clean, working code instantly.
-            </p>
+            <p className="text-2xl text-zinc-400">Describe your idea. Get clean, working code instantly.</p>
           </div>
 
-          {/* Input Area */}
-          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-10 mb-12">
+          {/* Main Code Generator */}
+          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-10 mb-16">
             <div className="flex gap-4 mb-8">
               <select
                 value={selectedLang}
@@ -180,33 +173,33 @@ export default function Home() {
             </div>
 
             {/* Example Prompts */}
-            <div className="flex flex-wrap gap-3">
-              {examplePrompts.map((example, index) => (
-                <button
-                  key={index}
-                  onClick={() => setPrompt(example)}
-                  className="text-sm bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-5 py-2.5 rounded-2xl transition text-zinc-300 hover:text-white"
-                >
-                  {example}
-                </button>
-              ))}
+            <div>
+              <p className="text-zinc-400 mb-3 text-sm">Try these examples:</p>
+              <div className="flex flex-wrap gap-3">
+                {examplePrompts.map((example, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPrompt(example)}
+                    className="text-sm bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-5 py-2.5 rounded-2xl transition text-zinc-300 hover:text-white"
+                  >
+                    {example}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Generated Code */}
           {generatedCode && (
-            <div className="bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden mb-20">
               <div className="p-5 bg-zinc-900 border-b border-zinc-800 flex justify-between items-center">
                 <span className="font-medium text-lg">Generated {selectedLang} Code</span>
-                <button 
-                  onClick={copyCode} 
-                  className="flex items-center gap-2 text-zinc-400 hover:text-white px-5 py-2 rounded-xl hover:bg-zinc-800 transition"
-                >
-                  <Copy size={20} /> Copy Code
+                <button onClick={copyCode} className="flex items-center gap-2 text-zinc-400 hover:text-white px-5 py-2 rounded-xl hover:bg-zinc-800">
+                  <Copy size={20} /> Copy
                 </button>
               </div>
               <Editor
-                height="740px"
+                height="720px"
                 language={selectedLang === "html" ? "html" : selectedLang}
                 value={generatedCode}
                 theme="vs-dark"
@@ -216,11 +209,44 @@ export default function Home() {
                   wordWrap: "on",
                   lineNumbers: "on",
                   automaticLayout: true,
-                  scrollBeyondLastLine: false,
                 }}
               />
             </div>
           )}
+
+          {/* How It Works */}
+          <div className="mb-20">
+            <h2 className="text-4xl font-bold text-center mb-12">How It Works</h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center">
+                <div className="text-5xl mb-4">1️⃣</div>
+                <h3 className="text-2xl font-semibold mb-3">Describe Your Idea</h3>
+                <p className="text-zinc-400">Type what you want to build in plain English.</p>
+              </div>
+              <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center">
+                <div className="text-5xl mb-4">2️⃣</div>
+                <h3 className="text-2xl font-semibold mb-3">Choose Language</h3>
+                <p className="text-zinc-400">Select JavaScript, Python, Rust, or any other language.</p>
+              </div>
+              <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center">
+                <div className="text-5xl mb-4">3️⃣</div>
+                <h3 className="text-2xl font-semibold mb-3">Get Clean Code</h3>
+                <p className="text-zinc-400">Receive ready-to-use, well-commented code instantly.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* About Section */}
+          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-12 text-center">
+            <h2 className="text-4xl font-bold mb-6">About CodeOmniverse</h2>
+            <p className="text-lg text-zinc-300 max-w-3xl mx-auto">
+              CodeOmniverse was created because we were tired of switching between scattered AI tools and fixing broken code snippets. 
+              We built a simple, fast platform where you can describe your idea in plain English and instantly get clean, working code.
+            </p>
+            <p className="text-lg text-zinc-300 max-w-3xl mx-auto mt-6">
+              Our goal is to help developers ship faster, learn better, and focus on building amazing products instead of struggling with syntax.
+            </p>
+          </div>
         </div>
       </main>
     </div>
