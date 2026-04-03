@@ -13,6 +13,8 @@
     "@ai-sdk/react": "^3.0.140",
     "@ai-sdk/xai": "^1.0.0",
     "@monaco-editor/react": "^4.7.0",
+    "@supabase/ssr": "^0.10.0",
+    "@supabase/supabase-js": "^2.101.1",
     "ai": "^6.0.138",
     "lucide-react": "^1.0.1",
     "monaco-editor": "^0.53.0",
