@@ -2,21 +2,19 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient, Session, AuthChangeEvent } from "@supabase/supabase-js";
-import { Copy, User, X, Settings as SettingsIcon } from "lucide-react";
+import { Copy, User, X, Settings as SettingsIcon, Menu } from "lucide-react";
 import Editor from "@monaco-editor/react";
 
-// Lazy Supabase client - prevents build-time error
+// Lazy Supabase client
 let supabaseInstance: any = null;
 
 const getSupabase = () => {
   if (!supabaseInstance) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
     if (!url || !key) {
       throw new Error("Supabase URL and Anon Key are missing. Check Vercel Environment Variables.");
     }
-
     supabaseInstance = createClient(url, key);
   }
   return supabaseInstance;
@@ -46,6 +44,7 @@ export default function Home() {
 
   // Navigation
   const [currentView, setCurrentView] = useState<"home" | "contact" | "privacy" | "terms">("home");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Auth
   const [showAuth, setShowAuth] = useState(false);
@@ -74,7 +73,7 @@ export default function Home() {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Particle Background
+  // Particle Background (unchanged)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -143,12 +142,11 @@ export default function Home() {
     };
   }, []);
 
-  // Handle Supabase Auth
+  // Supabase Auth
   useEffect(() => {
     const supabase = getSupabase();
 
-    supabase.auth.getSession().then(({ data }: { data: { session: Session | null } }) => {
-      const session = data.session;
+    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
       if (session) {
         setIsLoggedIn(true);
         setUsername(session.user.email?.split('@')[0] || "User");
@@ -157,7 +155,7 @@ export default function Home() {
       }
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       if (session) {
         setIsLoggedIn(true);
         setUsername(session.user.email?.split('@')[0] || "User");
@@ -296,8 +294,8 @@ export default function Home() {
 
       {/* Auth Gate */}
       {!isLoggedIn ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-md p-12 text-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-md p-8 sm:p-12 text-center">
             <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center mb-8 text-white font-bold text-6xl">
               C
             </div>
@@ -321,34 +319,49 @@ export default function Home() {
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg" 
                 required 
               />
-              <button type="submit" className="w-full bg-violet-600 hover:bg-violet-700 py-4 rounded-2xl font-medium text-lg">
+              <button type="submit" className="w-full bg-violet-600 hover:bg-violet-700 py-4 rounded-2xl font-medium text-lg transition">
                 {isLoginMode ? "Sign In" : "Create Account"}
               </button>
             </form>
 
             <button 
               onClick={() => setIsLoginMode(!isLoginMode)} 
-              className="mt-6 text-violet-400 hover:text-violet-300"
+              className="mt-6 text-violet-400 hover:text-violet-300 text-sm"
             >
               {isLoginMode ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
             </button>
           </div>
         </div>
       ) : (
-        // Normal site content
-        <main className="relative z-10 min-h-screen pt-16 pb-24 px-6">
+        // Normal site content - now mobile friendly
+        <main className="relative z-10 min-h-screen pt-16 pb-24 px-4 sm:px-6">
           <div className="max-w-5xl mx-auto">
-            {/* Top Navigation */}
-            <div className="flex justify-between items-center mb-12">
-              <div className="flex gap-8 text-sm">
+            {/* Top Navigation - Mobile Friendly */}
+            <div className="flex justify-between items-center mb-8 sm:mb-12">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-3xl">
+                  C
+                </div>
+                <span className="text-xl font-semibold">CodeOmniverse</span>
+              </div>
+
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex gap-8 text-sm">
                 <button onClick={() => setCurrentView("home")} className={`hover:text-violet-400 transition ${currentView === "home" ? "text-white font-medium" : "text-zinc-400"}`}>Home</button>
                 <button onClick={() => setCurrentView("contact")} className={`hover:text-violet-400 transition ${currentView === "contact" ? "text-white font-medium" : "text-zinc-400"}`}>Contact</button>
                 <button onClick={() => setCurrentView("privacy")} className={`hover:text-violet-400 transition ${currentView === "privacy" ? "text-white font-medium" : "text-zinc-400"}`}>Privacy</button>
                 <button onClick={() => setCurrentView("terms")} className={`hover:text-violet-400 transition ${currentView === "terms" ? "text-white font-medium" : "text-zinc-400"}`}>Terms</button>
               </div>
 
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-zinc-400">Hi, {username}</span>
+              {/* Mobile Menu Button */}
+              <div className="flex items-center gap-3 md:hidden">
+                <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2">
+                  <Menu size={24} />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-zinc-400 hidden sm:inline">Hi, {username}</span>
                 <button onClick={handleLogout} className="text-sm text-red-400 hover:text-red-300">Logout</button>
 
                 <button 
@@ -361,23 +374,35 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Mobile Menu */}
+            {isMobileMenuOpen && (
+              <div className="md:hidden bg-zinc-900 border border-zinc-700 rounded-2xl p-6 mb-8">
+                <div className="flex flex-col gap-4 text-sm">
+                  <button onClick={() => { setCurrentView("home"); setIsMobileMenuOpen(false); }} className="text-left py-2">Home</button>
+                  <button onClick={() => { setCurrentView("contact"); setIsMobileMenuOpen(false); }} className="text-left py-2">Contact</button>
+                  <button onClick={() => { setCurrentView("privacy"); setIsMobileMenuOpen(false); }} className="text-left py-2">Privacy</button>
+                  <button onClick={() => { setCurrentView("terms"); setIsMobileMenuOpen(false); }} className="text-left py-2">Terms</button>
+                </div>
+              </div>
+            )}
+
             {/* Home View */}
             {currentView === "home" && (
               <>
-                <div className="text-center mb-16">
+                <div className="text-center mb-12 sm:mb-16">
                   <div className="flex justify-center mb-6">
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center text-white font-bold text-5xl shadow-2xl">
                       C
                     </div>
                   </div>
-                  <h1 className="text-7xl font-bold tracking-tighter mb-4">CodeOmniverse</h1>
-                  <p className="text-2xl text-zinc-400">Describe your idea. Get clean, working code instantly.</p>
+                  <h1 className="text-5xl sm:text-7xl font-bold tracking-tighter mb-4">CodeOmniverse</h1>
+                  <p className="text-xl sm:text-2xl text-zinc-400 px-4">Describe your idea. Get clean, working code instantly.</p>
                 </div>
 
-                {/* Code Generator */}
-                <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-10 mb-16">
-                  <div className="flex gap-4 mb-8">
-                    <select value={selectedLang} onChange={(e) => setSelectedLang(e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-violet-500">
+                {/* Code Generator - Mobile friendly */}
+                <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-6 sm:p-10 mb-12">
+                  <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                    <select value={selectedLang} onChange={(e) => setSelectedLang(e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-violet-500 w-full sm:w-auto">
                       <option value="javascript">JavaScript</option>
                       <option value="typescript">TypeScript</option>
                       <option value="python">Python</option>
@@ -391,15 +416,15 @@ export default function Home() {
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
                       placeholder="Describe what you want to build..."
-                      className="flex-1 bg-zinc-800 border border-zinc-700 rounded-2xl px-8 py-4 text-xl focus:outline-none focus:border-violet-500"
+                      className="flex-1 bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-violet-500"
                     />
 
                     <button
                       onClick={handleGenerateCode}
                       disabled={isGenerating || !prompt.trim()}
-                      className="bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 px-10 py-4 rounded-2xl font-medium text-lg flex items-center gap-3 transition min-w-[180px] justify-center"
+                      className="bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 px-8 py-4 rounded-2xl font-medium text-lg flex items-center justify-center gap-3 transition w-full sm:w-auto"
                     >
-                      {isGenerating ? "Generating..." : "Generate Code"}
+                      {isGenerating ? "Generating..." : "Generate"}
                     </button>
                   </div>
 
@@ -418,7 +443,7 @@ export default function Home() {
                 </div>
 
                 {generatedCode && (
-                  <div className="bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden mb-20">
+                  <div className="bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden mb-12">
                     <div className="p-5 bg-zinc-900 border-b border-zinc-800 flex justify-between items-center">
                       <span className="font-medium text-lg">Generated {selectedLang} Code</span>
                       <button onClick={copyCode} className="flex items-center gap-2 text-zinc-400 hover:text-white px-5 py-2 rounded-xl hover:bg-zinc-800">
@@ -426,19 +451,20 @@ export default function Home() {
                       </button>
                     </div>
                     <Editor
-                      height="720px"
+                      height="620px"
                       language={selectedLang === "html" ? "html" : selectedLang}
                       value={generatedCode}
                       theme="vs-dark"
-                      options={{ minimap: { enabled: false }, fontSize: 16, wordWrap: "on", lineNumbers: "on", automaticLayout: true }}
+                      options={{ minimap: { enabled: false }, fontSize: 15, wordWrap: "on", lineNumbers: "on", automaticLayout: true }}
                     />
                   </div>
                 )}
 
+                {/* Responsive sections */}
                 {showWidgets.howItWorks && (
-                  <div className="mb-20">
-                    <h2 className="text-4xl font-bold text-center mb-12">How It Works</h2>
-                    <div className="grid md:grid-cols-3 gap-8">
+                  <div className="mb-16">
+                    <h2 className="text-4xl font-bold text-center mb-10">How It Works</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 text-center">
                         <div className="text-5xl mb-4">1️⃣</div>
                         <h3 className="text-2xl font-semibold mb-3">Describe Your Idea</h3>
@@ -459,9 +485,9 @@ export default function Home() {
                 )}
 
                 {showWidgets.blog && (
-                  <div className="mb-20">
-                    <h2 className="text-4xl font-bold text-center mb-12">Latest Articles</h2>
-                    <div className="grid md:grid-cols-2 gap-8">
+                  <div className="mb-16">
+                    <h2 className="text-4xl font-bold text-center mb-10">Latest Articles</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {blogPosts.map((post) => (
                         <div key={post.id} onClick={() => setSelectedBlog(post)} className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 hover:border-violet-500 transition cursor-pointer">
                           <div className="text-sm text-violet-400 mb-2">{post.date}</div>
@@ -476,9 +502,9 @@ export default function Home() {
               </>
             )}
 
-            {/* Contact, Privacy, Terms */}
+            {/* Other pages remain the same but with better padding */}
             {currentView === "contact" && (
-              <div className="max-w-2xl mx-auto bg-zinc-900 border border-zinc-700 rounded-3xl p-12 text-center">
+              <div className="max-w-2xl mx-auto bg-zinc-900 border border-zinc-700 rounded-3xl p-8 sm:p-12 text-center">
                 <h2 className="text-4xl font-bold mb-8">Contact Us</h2>
                 <p className="text-zinc-400 mb-10">Have questions or feedback? We'd love to hear from you.</p>
                 <a href="mailto:karhyoone@gmail.com" className="text-2xl text-violet-400 hover:text-violet-300">karhyoone@gmail.com</a>
@@ -486,7 +512,7 @@ export default function Home() {
             )}
 
             {currentView === "privacy" && (
-              <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-700 rounded-3xl p-12 prose prose-invert prose-lg leading-relaxed">
+              <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-700 rounded-3xl p-8 sm:p-12 prose prose-invert prose-lg leading-relaxed">
                 <h2 className="text-5xl font-bold mb-10 text-center">Privacy Policy</h2>
                 <p className="text-zinc-400 mb-8">Last updated: April 03, 2026</p>
                 <h3>1. Introduction</h3>
@@ -506,7 +532,7 @@ export default function Home() {
             )}
 
             {currentView === "terms" && (
-              <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-700 rounded-3xl p-12 prose prose-invert prose-lg leading-relaxed">
+              <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-700 rounded-3xl p-8 sm:p-12 prose prose-invert prose-lg leading-relaxed">
                 <h2 className="text-5xl font-bold mb-10 text-center">Terms of Service</h2>
                 <p className="text-zinc-400 mb-8">Last updated: April 03, 2026</p>
                 <h3>1. Acceptance of Terms</h3>
@@ -520,10 +546,10 @@ export default function Home() {
         </main>
       )}
 
-      {/* Settings Modal */}
+      {/* Settings Modal - Mobile friendly */}
       {showSettings && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-lg p-10 relative">
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-lg p-8 sm:p-10 relative">
             <button onClick={() => setShowSettings(false)} className="absolute top-6 right-6 text-zinc-400 hover:text-white">
               <X size={24} />
             </button>
@@ -585,8 +611,8 @@ export default function Home() {
 
       {/* Blog Modal */}
       {selectedBlog && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-10">
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8">
             <button onClick={() => setSelectedBlog(null)} className="float-right text-zinc-400 hover:text-white text-xl">✕</button>
             <div className="text-sm text-violet-400 mb-4">{selectedBlog.date}</div>
             <h2 className="text-4xl font-bold mb-8">{selectedBlog.title}</h2>
